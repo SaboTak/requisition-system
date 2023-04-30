@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
-import {RequisitionService} from './requisition.service';
-import {CreateRequisitionDto} from './dto/requisition.dto'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { RequisitionService } from './requisition.service';
+import { CreateRequisitionDto, UpdateRequisitionDto } from './dto/requisition.dto'
 
 @Controller('requisition')
 export class RequisitionController {
@@ -21,7 +21,12 @@ export class RequisitionController {
 
     @Delete(':id')
     deleteRequisition(@Param('id') id: number){
-        this.requisitionService.deleteRequisition(id)
+        return this.requisitionService.deleteRequisition(id)
+    }
+
+    @Patch(':id')
+    updateRequisition(@Param('id') id: number, @Body() updatedFields: UpdateRequisitionDto){
+        return this.requisitionService.updateRequisition(id, updatedFields)
     }
 
 

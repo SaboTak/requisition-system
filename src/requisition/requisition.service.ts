@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Requisition, RequisitionStatus } from './requisition.entity'
+import { UpdateRequisitionDto } from './dto/requisition.dto';
 
 @Injectable()
 export class RequisitionService {
@@ -15,12 +16,10 @@ export class RequisitionService {
         status: RequisitionStatus.PENDING,
     }];
 
-    //Methods for requisitions
+    //Principals Methods for requisitions
     getRequisitions() {
         return this.requisitions
     }
-
-    getRequisition() { }
 
     createRequisition(id: number,tittle: string,description: string,image: string,process: string) { 
         const requisition = {
@@ -35,10 +34,16 @@ export class RequisitionService {
         return requisition;
     }
 
-    updateRequisition() { }
+    updateRequisition(id: number, updatedFields: UpdateRequisitionDto) : Requisition { 
+        const requisition = this.getRequisitionById(id);
+        const newrequisition =  Object.assign(requisition,updatedFields);
+        this.requisitions =  this.requisitions.map(requisition => requisition.id === id ? newrequisition : requisition);
+        return newrequisition;
+    }
 
-    deleteRequisition(id: number) { 
-        this.requisitions = this.requisitions.filter(requisition => requisition.id !== id)
+    deleteRequisition(id: number): Requisition[] { 
+        this.requisitions = this.requisitions.filter(requisition => requisition.id !== id);
+        return this.requisitions;
     }
 
     changeProcessRequisition() { }
@@ -46,5 +51,11 @@ export class RequisitionService {
     aprovedRequisition() { }
 
     declinedRequisition() { }
+
+    // Methods Aux
+    getRequisitionById(id: number): Requisition {
+        return this.requisitions.find(requisition => requisition.id == id)
+    }
+
 
 }
