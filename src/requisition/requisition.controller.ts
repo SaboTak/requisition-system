@@ -16,7 +16,7 @@ export class RequisitionController {
 
     @Post()
     createRequisition(@Body() newrequisition: CreateRequisitionDto){
-        return this.requisitionService.createRequisition(newrequisition.id, newrequisition.tittle, newrequisition.description, newrequisition.image, newrequisition.process)
+        return this.requisitionService.createRequisition(newrequisition.id, newrequisition.tittle, newrequisition.description, newrequisition.image, newrequisition.process, newrequisition.currentProcess, newrequisition.currentState)
     }
 
     @Delete(':id')

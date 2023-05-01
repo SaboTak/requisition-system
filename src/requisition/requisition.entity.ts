@@ -7,6 +7,13 @@ export enum RequisitionStatus {
     DECLINED = 'DECLINED'
 }
 
+export enum RequisitionDepartmentStatus{
+    DECANATURA = 'DECANATURA',
+    CONTABLE = 'CONTABLE',
+    REACTORIA = 'RECTORIA',
+    QA = 'QA'
+}
+
 
 export class Requisition {
     id : number
@@ -14,6 +21,8 @@ export class Requisition {
     description : string
     image : string
     process : string
+    currentProcess : string
+    currentState : RequisitionDepartmentStatus
     status : RequisitionStatus
 
 }

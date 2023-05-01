@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Requisition, RequisitionStatus } from './requisition.entity'
+import { Requisition, RequisitionStatus,RequisitionDepartmentStatus } from './requisition.entity'
 import { UpdateRequisitionDto } from './dto/requisition.dto';
 
 @Injectable()
@@ -13,21 +13,25 @@ export class RequisitionService {
         description: 'Prueba body 1',
         image: 'zzz',
         process: '{iniciando}',
+        currentProcess: '{prueba}',
+        currentState: RequisitionDepartmentStatus.DECANATURA,
         status: RequisitionStatus.PENDING,
     }];
 
     //Principals Methods for requisitions
-    getRequisitions() {
+    getRequisitions() :Requisition[] {
         return this.requisitions
     }
 
-    createRequisition(id: number,tittle: string,description: string,image: string,process: string) { 
+    createRequisition(id: number,tittle: string,description: string,image: string,process: string, currentProcess: string , currentState: RequisitionDepartmentStatus): Requisition { 
         const requisition = {
             id,
             tittle,
             description,
             image,
             process,
+            currentProcess,
+            currentState,
             status: RequisitionStatus.INITIATED,
         }
         this.requisitions.push(requisition);
@@ -46,11 +50,21 @@ export class RequisitionService {
         return this.requisitions;
     }
 
-    changeProcessRequisition() { }
+    changeProcessRequisition() {}
 
-    aprovedRequisition() { }
+    aprovedRequisition(id:number) : Requisition {
+        const requisition = this.getRequisitionById(id);
+        const newrequisition =  Object.assign(requisition,{ status: RequisitionStatus.APPROVED });
+        this.requisitions =  this.requisitions.map(requisition => requisition.id === id ? newrequisition : requisition);
+        return newrequisition;
+    }
 
-    declinedRequisition() { }
+    declinedRequisition(id: number) : Requisition {
+        const requisition = this.getRequisitionById(id);
+        const newrequisition =  Object.assign(requisition,{ status: RequisitionStatus.DECLINED });
+        this.requisitions =  this.requisitions.map(requisition => requisition.id === id ? newrequisition : requisition);
+        return newrequisition;
+    }
 
     // Methods Aux
     getRequisitionById(id: number): Requisition {

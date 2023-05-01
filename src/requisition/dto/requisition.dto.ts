@@ -1,4 +1,6 @@
 import { IsString,IsNotEmpty, IsNumber, IsOptional } from 'class-validator'
+import { RequisitionDepartmentStatus } from '../requisition.entity'
+
 export class CreateRequisitionDto {
     @IsNotEmpty()
     @IsNumber()
@@ -19,6 +21,14 @@ export class CreateRequisitionDto {
     @IsNotEmpty()
     @IsString()
     process: string
+
+    @IsNotEmpty()
+    @IsString()
+    currentProcess: string
+
+    @IsNotEmpty()
+    @IsString()
+    currentState: RequisitionDepartmentStatus
 }
 
 
@@ -34,8 +44,4 @@ export class UpdateRequisitionDto {
     @IsString()
     @IsOptional()
     image?: string
-
-    @IsString()
-    @IsOptional()
-    process?: string
 }
