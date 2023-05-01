@@ -29,5 +29,9 @@ export class RequisitionController {
         return this.requisitionService.updateRequisition(id, updatedFields)
     }
 
+    @Post('declined/:id')
+    declinedRequisition(@Param('id') id: number){
+        return this.requisitionService.declinedRequisition(id);
+    }
 
 }
