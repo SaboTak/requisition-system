@@ -18,7 +18,7 @@ export class RequisitionService {
         currentDates: '',
         currentProcess: 'DECANATURA,CONTABLE,RECTORIA',
         currentState: RequisitionDepartmentStatus.DECANATURA,
-        status: RequisitionStatus.PENDING,
+        status: RequisitionStatus.INITIATED,
     }];
 
     //Principals Methods for requisitions
@@ -77,9 +77,9 @@ export class RequisitionService {
         const newrequisition = Object.assign(requisition,
             {
                 "currentProcess": resultNewProcess,
-                "currentState": newProcessStatus.length > 0 ? newProcessStatus[0]  : "",
+                "currentState": newProcessStatus.length > 0 ? newProcessStatus[0]  : requisition.currentState,
                 "currentDates": resultNewDates,
-                "status": newProcessStatus.length == 0 ? "IN_PROGRESS"  : requisition.status, 
+                "status": newProcessStatus.length == 0 ? "PENDING"  : "IN_PROGRESS", 
             });
         return newrequisition;
     }
@@ -107,7 +107,7 @@ export class RequisitionService {
         const today = new Date();
         const month = today.getMonth() + 1;
         const day = today.getDate();
-        const year = today.getFullYear();
+        const year = today.getFullYear();        
         return `${month.toString().padStart(2, "0")}/${day.toString().padStart(2, "0")}/${year},`;
     }
 
