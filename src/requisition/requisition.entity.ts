@@ -19,8 +19,11 @@ export class Requisition {
     id : number
     tittle : string
     description : string
+    observation : string
     image : string
     process : string
+    firms: string
+    currentDates: string
     currentProcess : string
     currentState : RequisitionDepartmentStatus
     status : RequisitionStatus
