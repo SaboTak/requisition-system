@@ -34,6 +34,11 @@ export class RequisitionController {
         return this.requisitionService.declinedRequisition(id);
     }
 
+    @Post('aproved/:id')
+    aprovedRequisition(@Param('id') id: number){
+        return this.requisitionService.aprovedRequisition(id);
+    }
+
     @Post('process/:id')
     changeProcessRequisition(@Param('id') id: number){
         return this.requisitionService.changeProcessRequisition(id)

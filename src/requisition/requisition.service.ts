@@ -62,40 +62,46 @@ export class RequisitionService {
         const newProcessStatus = requisition.currentProcess.split(",");
         newProcessStatus.shift();
         const resultNewProcess = newProcessStatus.join(",");
-
+    
         //Logic record for the changes process
         const fechaActualTexto = this.fechaActual();
         const newRecordDates = requisition.currentDates.split(",");
-
-        if(newProcessStatus.length >0){
+    
+        if (requisition.currentProcess != "") {
             newRecordDates.push(fechaActualTexto);
         }
-
-        const resultNewDates = newRecordDates.join(",");
-
+    
+        const resultNewDates = newRecordDates.filter((date) => date !== '').join(",");
+    
         // Set new data
-        const newrequisition = Object.assign(requisition,
-            {
-                "currentProcess": resultNewProcess,
-                "currentState": newProcessStatus.length > 0 ? newProcessStatus[0]  : requisition.currentState,
-                "currentDates": resultNewDates,
-                "status": newProcessStatus.length == 0 ? "PENDING"  : "IN_PROGRESS", 
-            });
+        const newrequisition = Object.assign(requisition, {
+            "currentProcess": resultNewProcess,
+            "currentState": newProcessStatus.length > 0 ? newProcessStatus[0] : requisition.currentState,
+            "currentDates": resultNewDates,
+            "status": newProcessStatus.length == 0 ? "PENDING" : "IN_PROGRESS",
+        });
         return newrequisition;
     }
-
-    aprovedRequisition(id: number): Requisition {
+    
+    aprovedRequisition(id: number) {
         const requisition = this.getRequisitionById(id);
-        const newrequisition = Object.assign(requisition, { status: RequisitionStatus.APPROVED });
+        if(requisition.status == 'PENDING'){
+            const newrequisition = Object.assign(requisition, { status: RequisitionStatus.APPROVED });
         this.requisitions = this.requisitions.map(requisition => requisition.id === id ? newrequisition : requisition);
         return newrequisition;
+        }
+        return "No esta pendiente de decision.";
+        
     }
 
-    declinedRequisition(id: number): Requisition {
+    declinedRequisition(id: number) {
         const requisition = this.getRequisitionById(id);
-        const newrequisition = Object.assign(requisition, { status: RequisitionStatus.DECLINED });
+        if(requisition.status == 'PENDING'){
+            const newrequisition = Object.assign(requisition, { status: RequisitionStatus.DECLINED });
         this.requisitions = this.requisitions.map(requisition => requisition.id === id ? newrequisition : requisition);
         return newrequisition;
+        }
+        return "No esta pendiente de decision.";
     }
 
     // Methods Aux
