@@ -14,5 +14,6 @@ export class User {
     username : string
     password : string
     department : string
+    firm : string
     status : UserStatus
 }
