@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Requisition, RequisitionStatus, RequisitionDepartmentStatus } from './requisition.entity'
 import { UpdateRequisitionDto } from './dto/requisition.dto';
+import { UsersService } from '../users/users.service'
 
 @Injectable()
 export class RequisitionService {
+
+    constructor(private usersService:UsersService){}
 
 
     //Create the firt obj of the requisition array (it is while you connect the db)
@@ -102,6 +105,13 @@ export class RequisitionService {
         return newrequisition;
         }
         return "No esta pendiente de decision.";
+    }
+
+    async getRequisitionsByUser(id: number): Promise<Requisition[] | undefined>{
+        const user = await this.usersService.findOneById(id);
+        console.log(user);
+        
+        return this.requisitions.filter((req: Requisition) => req.currentState === user.department);
     }
 
     // Methods Aux

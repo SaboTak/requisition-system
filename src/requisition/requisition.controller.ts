@@ -43,4 +43,10 @@ export class RequisitionController {
     changeProcessRequisition(@Param('id') id: number){
         return this.requisitionService.changeProcessRequisition(id)
     }
+
+    @Post('bydepartment/:id')
+    getRequisitionsByUser(@Param('id') id: number){
+        return this.requisitionService.getRequisitionsByUser(id)
+    }
+
 }

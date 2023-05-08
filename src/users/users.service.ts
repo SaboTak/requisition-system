@@ -11,9 +11,9 @@ export class UsersService {
       name: 'jhon',
       username: 'john',
       password: '$2b$10$.RZYmoEz3HLC42.tfG544.9TUXt3WskJyE7nm/c5UcCW3TEsCpu3y',
-      department: 'DECANATURA',
-      firm : '',
-      status:UserStatus.ACTIVE
+      department: 'CONTABLE',
+      firm: '',
+      status: UserStatus.ACTIVE
     },
     {
       id: 2,
@@ -22,7 +22,7 @@ export class UsersService {
       password: 'guess',
       department: 'DECANATURA',
       firm: '',
-      status:UserStatus.ACTIVE
+      status: UserStatus.ACTIVE
     },
   ];
 
@@ -30,8 +30,8 @@ export class UsersService {
     return this.users.find(user => user.username === username);
   }
 
-  async createUser(id : number,name: string,username : string,password : string,department : string,firm : string): Promise<User>{
-    
+  async createUser(id: number, name: string, username: string, password: string, department: string, firm: string): Promise<User> {
+
     const HashPassword = await this.verifyPass(password);
 
     const user = {
@@ -42,15 +42,19 @@ export class UsersService {
       department,
       firm,
       status: UserStatus.ACTIVE,
+    }
+    this.users.push(user);
+    return user;
   }
-  this.users.push(user);
-  return user;
+
+  async findOneById(id: number): Promise<User> {
+    return await this.users.find(user => user.id === parseInt(id.toString()));
   }
 
   //Hash Pass
   async verifyPass(pass): Promise<string> {
-    const SALT = parseInt(process.env.SALTHASH);    
-    const hash =  bcrypt.hash(pass, SALT);
+    const SALT = parseInt(process.env.SALTHASH);
+    const hash = bcrypt.hash(pass, SALT);
     return hash;
   }
 
