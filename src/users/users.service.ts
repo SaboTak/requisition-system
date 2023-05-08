@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { User, UserStatus } from './users.entity'
+
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
+
 
   private users: User[] = [
     {
