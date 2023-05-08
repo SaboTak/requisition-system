@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Requisition, RequisitionStatus, RequisitionDepartmentStatus } from './requisition.entity'
-import { UpdateRequisitionDto } from './dto/requisition.dto';
-import { UsersService } from '../users/users.service'
+import { UpdateRequisitionDto , CreateRequisitionDto, UpdateProcessRequisitionDtop} from './dto/requisition.dto';
+import { UsersService } from '../users/users.service';
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository , In} from "typeorm";
+
 
 @Injectable()
 export class RequisitionService {
 
-    constructor(private usersService:UsersService){}
+    constructor(private usersService:UsersService,@InjectRepository(Requisition) private requisitionRepository: Repository<Requisition>){}
 
 
     //Create the firt obj of the requisition array (it is while you connect the db)
@@ -25,13 +28,12 @@ export class RequisitionService {
     }];
 
     //Principals Methods for requisitions
-    getRequisitions(): Requisition[] {
-        return this.requisitions
+    async getRequisitions(): Promise<Requisition[]> {
+        return  await this.requisitionRepository.find();
     }
 
-    createRequisition(id: number, tittle: string, description: string, image: string, process: string, currentProcess: string, currentState: RequisitionDepartmentStatus): Requisition {
+    async createRequisition(tittle: string, description: string, image: string, process: string, currentProcess: string, currentState: RequisitionDepartmentStatus): Promise<CreateRequisitionDto> {
         const requisition = {
-            id,
             tittle,
             description,
             observation: '',
@@ -43,25 +45,22 @@ export class RequisitionService {
             currentState,
             status: RequisitionStatus.INITIATED,
         }
-        this.requisitions.push(requisition);
-        return requisition;
+        const newRequisition = this.requisitionRepository.create(requisition);
+        this.requisitionRepository.save(newRequisition)
+        return newRequisition;
     }
 
-    updateRequisition(id: number, updatedFields: UpdateRequisitionDto): Requisition {
-        const requisition = this.getRequisitionById(id);
-        const newrequisition = Object.assign(requisition, updatedFields);
-        this.requisitions = this.requisitions.map(requisition => requisition.id === id ? newrequisition : requisition);
-        return newrequisition;
+    updateRequisition(id: number, updatedFields: UpdateRequisitionDto) {
+        return this.requisitionRepository.update({id},updatedFields)
     }
 
-    deleteRequisition(id: number): Requisition[] {
-        this.requisitions = this.requisitions.filter(requisition => requisition.id !== id);
-        return this.requisitions;
+    async deleteRequisition(id: number) {
+        return await this.requisitionRepository.delete({id})
     }
 
-    changeProcessRequisition(id: number): Requisition {
+    async changeProcessRequisition(id: number) {
         //Logic for new state of the Requisition
-        const requisition = this.getRequisitionById(id);
+        const requisition = await this.getRequisitionById(id);
         const newProcessStatus = requisition.currentProcess.split(",");
         newProcessStatus.shift();
         const resultNewProcess = newProcessStatus.join(",");
@@ -77,46 +76,48 @@ export class RequisitionService {
         const resultNewDates = newRecordDates.filter((date) => date !== '').join(",");
     
         // Set new data
-        const newrequisition = Object.assign(requisition, {
-            "currentProcess": resultNewProcess,
-            "currentState": newProcessStatus.length > 0 ? newProcessStatus[0] : requisition.currentState,
-            "currentDates": resultNewDates,
-            "status": newProcessStatus.length == 0 ? "PENDING" : "IN_PROGRESS",
-        });
-        return newrequisition;
+        return await this.requisitionRepository.update(id,{
+            currentProcess: resultNewProcess,
+            currentState: newProcessStatus.length > 0 ? RequisitionDepartmentStatus[newProcessStatus[0]] : requisition.currentState,
+            currentDates: resultNewDates,
+            status : newProcessStatus.length == 0 ? RequisitionStatus.PENDING : RequisitionStatus.IN_PROGRESS,
+
+        } )
     }
     
-    aprovedRequisition(id: number) {
-        const requisition = this.getRequisitionById(id);
+    async aprovedRequisition(id: number) {
+        const requisition = await this.getRequisitionById(id);
         if(requisition.status == 'PENDING'){
-            const newrequisition = Object.assign(requisition, { status: RequisitionStatus.APPROVED });
-        this.requisitions = this.requisitions.map(requisition => requisition.id === id ? newrequisition : requisition);
-        return newrequisition;
+            return await this.requisitionRepository.update(id,{status : RequisitionStatus.APPROVED})
         }
         return "No esta pendiente de decision.";
         
     }
 
-    declinedRequisition(id: number) {
-        const requisition = this.getRequisitionById(id);
+    async declinedRequisition(id: number) {
+        const requisition = await this.getRequisitionById(id);
         if(requisition.status == 'PENDING'){
-            const newrequisition = Object.assign(requisition, { status: RequisitionStatus.DECLINED });
-        this.requisitions = this.requisitions.map(requisition => requisition.id === id ? newrequisition : requisition);
-        return newrequisition;
+            return await this.requisitionRepository.update(id,{status : RequisitionStatus.DECLINED})
         }
         return "No esta pendiente de decision.";
     }
 
     async getRequisitionsByUser(id: number): Promise<Requisition[] | undefined>{
         const user = await this.usersService.findOneById(id);
-        console.log(user);
-        
-        return this.requisitions.filter((req: Requisition) => req.currentState === user.department);
+        return  this.requisitionRepository.find({
+            where:{
+                currentState: In([user.department])
+            }
+        })
     }
 
     // Methods Aux
-    getRequisitionById(id: number): Requisition {
-        return this.requisitions.find(requisition => requisition.id == id)
+    async getRequisitionById(id: number): Promise<Requisition> {
+        return await this.requisitionRepository.findOne({
+            where:{
+                id: id
+            }
+        })
     }
 
     fechaActual(): string {

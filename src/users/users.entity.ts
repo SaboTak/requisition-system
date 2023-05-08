@@ -29,6 +29,12 @@ export class User {
     @Column()
     firm : string
 
+    @Column({unique:true})
+    identificacion : string
+
+    @Column({unique:true})
+    correo : string
+
     @Column()
     status : UserStatus
 }

@@ -1,56 +1,49 @@
 import { Injectable } from '@nestjs/common';
 import { User, UserStatus } from './users.entity'
+import { InjectRepository } from '@nestjs/typeorm'
+import { singUpDto } from "./dto/users.dto";
+import { Repository } from "typeorm";
 
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
 
-
-  private users: User[] = [
-    {
-      id: 1,
-      name: 'jhon',
-      username: 'john',
-      password: '$2b$10$.RZYmoEz3HLC42.tfG544.9TUXt3WskJyE7nm/c5UcCW3TEsCpu3y',
-      department: 'CONTABLE',
-      firm: '',
-      status: UserStatus.ACTIVE
-    },
-    {
-      id: 2,
-      name: 'maria',
-      username: 'maria',
-      password: 'guess',
-      department: 'DECANATURA',
-      firm: '',
-      status: UserStatus.ACTIVE
-    },
-  ];
+  constructor(@InjectRepository(User) private userRepository: Repository<User>){}
 
   async findOne(username: string): Promise<User> {
-    return this.users.find(user => user.username === username);
+    return await this.userRepository.findOne({
+      where:{
+        username : username
+      }
+    });
   }
 
-  async createUser(id: number, name: string, username: string, password: string, department: string, firm: string): Promise<User> {
+  async createUser( name: string, username: string, password: string, department: string, firm: string, identificacion:string, correo:string): Promise<singUpDto> {
 
     const HashPassword = await this.verifyPass(password);
 
     const user = {
-      id,
       name,
       username,
       password: HashPassword,
       department,
       firm,
+      identificacion,
+      correo,
       status: UserStatus.ACTIVE,
-    }
-    this.users.push(user);
-    return user;
+    };
+    const newUser = this.userRepository.create(user);
+    this.userRepository.save(newUser)
+    return newUser;
   }
 
   async findOneById(id: number): Promise<User> {
-    return await this.users.find(user => user.id === parseInt(id.toString()));
+    return await this.userRepository.findOne({
+      where:{
+        id : id
+      }
+    });
   }
 
   //Hash Pass

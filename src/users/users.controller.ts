@@ -11,7 +11,7 @@ export class UsersController {
     @HttpCode(HttpStatus.OK)
     @Post('Register')
     signIn(@Body() singUpDto: singUpDto) {
-        return this.usersService.createUser(singUpDto.id, singUpDto.name, singUpDto.username,singUpDto.password,singUpDto.department,singUpDto.firm);
+        return this.usersService.createUser( singUpDto.name, singUpDto.username,singUpDto.password,singUpDto.department,singUpDto.firm, singUpDto.identificacion, singUpDto.correo);
     }
 
 

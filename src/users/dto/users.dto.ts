@@ -1,10 +1,6 @@
 import { IsString,IsNotEmpty, IsNumber } from 'class-validator'
 
 export class singUpDto {
-
-    @IsNotEmpty()
-    @IsNumber()
-    id: number
     
     @IsNotEmpty()
     @IsString()
@@ -25,5 +21,13 @@ export class singUpDto {
     @IsNotEmpty()
     @IsString()
     firm : string
+
+    @IsNotEmpty()
+    @IsString()
+    identificacion : string
+
+    @IsNotEmpty()
+    @IsString()
+    correo : string
 
 }
