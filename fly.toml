@@ -7,14 +7,7 @@ app = "app-requisition-unilibre"
 primary_region = "bog"
 
 [env]
-  JWT_SECRET='Nu7$&eNT3rpR1cE!'
-  SALTHASH=10
   PORT=8080
-  DB_DATABASE='app-requisition-unilibre'
-  DB_USERNAME='96kouulz3r5luz8x2jki'
-  DB_HOST='aws.connect.psdb.cloud'
-  DB_PORT=3306
-  DB_PASS='pscale_pw_h9TdrOuzwG8O2hE5UUvNZP36OP9CUWfhKSWODnns9wY'
 
 [http_service]
   internal_port = 8080
