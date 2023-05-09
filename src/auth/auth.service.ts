@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { ValidateDataRequest } from 'src/dto/global.dto';
 
 @Injectable()
 export class AuthService {
@@ -12,18 +13,29 @@ export class AuthService {
   ) { }
 
   // Login
-  async signIn(username: string, pass: string) {
-    const user = await this.usersService.findOne(username);
-    const isMatch = await this.verifyPass(pass, user.password);
+  async signIn(username: string, pass: string): Promise<ValidateDataRequest> {
+    try {
+      const user = await this.usersService.findOne(username);
+      if (user) {
+        const isMatch = await this.verifyPass(pass, user.password);
 
-    if (!isMatch) {
-      throw new UnauthorizedException();
+        if (!isMatch) {
+          throw new UnauthorizedException();
+        }
+
+        const payload = { username: user.username, sub: user.id };
+        const access_token= await this.jwtService.signAsync(payload);
+        
+        return {
+          message: "Usuario no encontrado", data: access_token, valid: true
+        };
+      } else {
+        return { message: "Usuario no encontrado", data: null, valid: false };
+      }
+
+    } catch (error) {
+      return {message: "Error encontrando usuario: " + error, data: null, valid:false}
     }
-
-    const payload = { username: user.username, sub: user.id };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
   }
 
   // Verify the correct login User and Password

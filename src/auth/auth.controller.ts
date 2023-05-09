@@ -13,13 +13,17 @@ import { Public } from './auth.decorator'
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
-  
+  constructor(private authService: AuthService) { }
+
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('login')
   signIn(@Body() signInDto: signInDto) {
-    return this.authService.signIn(signInDto.username, signInDto.password);
+    try {
+      return this.authService.signIn(signInDto.username, signInDto.password);
+    } catch (error) {
+      return "Error: " + error
+    }
   }
 
   @Get('profile')

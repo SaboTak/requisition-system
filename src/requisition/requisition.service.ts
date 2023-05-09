@@ -1,120 +1,148 @@
 import { Injectable } from '@nestjs/common';
 import { Requisition, RequisitionStatus, RequisitionDepartmentStatus } from './requisition.entity'
-import { UpdateRequisitionDto , CreateRequisitionDto, UpdateProcessRequisitionDtop} from './dto/requisition.dto';
+import { UpdateRequisitionDto } from './dto/requisition.dto';
 import { UsersService } from '../users/users.service';
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository , In} from "typeorm";
+import { Repository, In } from "typeorm";
+import { ValidateDataRequest } from 'src/dto/global.dto';
 
 
 @Injectable()
 export class RequisitionService {
 
-    constructor(private usersService:UsersService,@InjectRepository(Requisition) private requisitionRepository: Repository<Requisition>){}
-
-
-    //Create the firt obj of the requisition array (it is while you connect the db)
-    private requisitions: Requisition[] = [{
-        id: 1,
-        tittle: 'Prueba 1',
-        description: 'Prueba body 1',
-        observation: '',
-        image: 'zzz',
-        process: 'DECANATURA,CONTABLE,RECTORIA',
-        firms: '',
-        currentDates: '',
-        currentProcess: 'DECANATURA,CONTABLE,RECTORIA',
-        currentState: RequisitionDepartmentStatus.DECANATURA,
-        status: RequisitionStatus.INITIATED,
-    }];
+    constructor(private usersService: UsersService, @InjectRepository(Requisition) private requisitionRepository: Repository<Requisition>) { }
 
     //Principals Methods for requisitions
-    async getRequisitions(): Promise<Requisition[]> {
-        return  await this.requisitionRepository.find();
-    }
-
-    async createRequisition(tittle: string, description: string, image: string, process: string, currentProcess: string, currentState: RequisitionDepartmentStatus): Promise<CreateRequisitionDto> {
-        const requisition = {
-            tittle,
-            description,
-            observation: '',
-            image,
-            process,
-            firms: '',
-            currentDates: '',
-            currentProcess,
-            currentState,
-            status: RequisitionStatus.INITIATED,
+    async getRequisitions(): Promise<ValidateDataRequest> {
+        try {
+            const data = await this.requisitionRepository.find();
+            return { message: "Requisiciones ", data: data, valid: true }
+        } catch (error) {
+            return { message: "Error obteniendo Requisiciones: " + error, data: null, valid: false }
         }
-        const newRequisition = this.requisitionRepository.create(requisition);
-        this.requisitionRepository.save(newRequisition)
-        return newRequisition;
     }
 
-    updateRequisition(id: number, updatedFields: UpdateRequisitionDto) {
-        return this.requisitionRepository.update({id},updatedFields)
-    }
-
-    async deleteRequisition(id: number) {
-        return await this.requisitionRepository.delete({id})
-    }
-
-    async changeProcessRequisition(id: number) {
-        //Logic for new state of the Requisition
-        const requisition = await this.getRequisitionById(id);
-        const newProcessStatus = requisition.currentProcess.split(",");
-        newProcessStatus.shift();
-        const resultNewProcess = newProcessStatus.join(",");
-    
-        //Logic record for the changes process
-        const fechaActualTexto = this.fechaActual();
-        const newRecordDates = requisition.currentDates.split(",");
-    
-        if (requisition.currentProcess != "") {
-            newRecordDates.push(fechaActualTexto);
-        }
-    
-        const resultNewDates = newRecordDates.filter((date) => date !== '').join(",");
-    
-        // Set new data
-        return await this.requisitionRepository.update(id,{
-            currentProcess: resultNewProcess,
-            currentState: newProcessStatus.length > 0 ? RequisitionDepartmentStatus[newProcessStatus[0]] : requisition.currentState,
-            currentDates: resultNewDates,
-            status : newProcessStatus.length == 0 ? RequisitionStatus.PENDING : RequisitionStatus.IN_PROGRESS,
-
-        } )
-    }
-    
-    async aprovedRequisition(id: number) {
-        const requisition = await this.getRequisitionById(id);
-        if(requisition.status == 'PENDING'){
-            return await this.requisitionRepository.update(id,{status : RequisitionStatus.APPROVED})
-        }
-        return "No esta pendiente de decision.";
-        
-    }
-
-    async declinedRequisition(id: number) {
-        const requisition = await this.getRequisitionById(id);
-        if(requisition.status == 'PENDING'){
-            return await this.requisitionRepository.update(id,{status : RequisitionStatus.DECLINED})
-        }
-        return "No esta pendiente de decision.";
-    }
-
-    async getRequisitionsByUser(id: number): Promise<Requisition[] | undefined>{
-        const user = await this.usersService.findOneById(id);
-        return  this.requisitionRepository.find({
-            where:{
-                currentState: In([user.department])
+    async createRequisition(tittle: string, description: string, image: string, process: string, currentProcess: string, currentState: RequisitionDepartmentStatus): Promise<ValidateDataRequest> {
+        try {
+            const requisition = {
+                tittle,
+                description,
+                observation: '',
+                image,
+                process,
+                firms: '',
+                currentDates: '',
+                currentProcess,
+                currentState,
+                status: RequisitionStatus.INITIATED,
             }
-        })
+            const newRequisition = this.requisitionRepository.create(requisition);
+            const createrequisition = this.requisitionRepository.save(newRequisition)
+            return { message: "Requisicion creada con exito ", data: createrequisition, valid: true }
+        } catch (error) {
+            return { message: "Error creando Requisicion: " + error, data: null, valid: false }
+        }
+    }
+
+    updateRequisition(id: number, updatedFields: UpdateRequisitionDto): ValidateDataRequest {
+
+        try {
+            const updaterequisition = this.requisitionRepository.update({ id }, updatedFields)
+            return { message: "Requisicion actualizada con exito", data: updaterequisition, valid: true }
+        } catch (error) {
+            return { message: "Error actualizando Requisicion: " + error, data: null, valid: false }
+        }
+
+    }
+
+    async deleteRequisition(id: number): Promise<ValidateDataRequest> {
+
+        try {
+            const detelerequisition = await this.requisitionRepository.update(id, { status: RequisitionStatus.DECLINED });
+            return { message: "Requisicion eliminada con exito", data: detelerequisition, valid: true }
+        } catch (error) {
+            return { message: "Error eliminando Requisicion: " + error, data: null, valid: false }
+        }
+    }
+
+    async changeProcessRequisition(id: number): Promise<ValidateDataRequest> {
+        try {
+            //Logic for new state of the Requisition
+            const requisition = await this.getRequisitionById(id);
+            const newProcessStatus = requisition.currentProcess.split(",");
+            newProcessStatus.shift();
+            const resultNewProcess = newProcessStatus.join(",");
+
+            //Logic record for the changes process
+            const fechaActualTexto = this.fechaActual();
+            const newRecordDates = requisition.currentDates.split(",");
+
+            if (requisition.currentProcess != "") {
+                newRecordDates.push(fechaActualTexto);
+            }
+
+            const resultNewDates = newRecordDates.filter((date) => date !== '').join(",");
+
+            // Set new data
+            const UpdateRequisition = await this.requisitionRepository.update(id, {
+                currentProcess: resultNewProcess,
+                currentState: newProcessStatus.length > 0 ? RequisitionDepartmentStatus[newProcessStatus[0]] : requisition.currentState,
+                currentDates: resultNewDates,
+                status: newProcessStatus.length == 0 ? RequisitionStatus.PENDING : RequisitionStatus.IN_PROGRESS,
+
+            })
+            return { message: "Requisicion actualizada con exito", data: UpdateRequisition, valid: true }
+
+        } catch (error) {
+            return { message: "Error avanzando en el proceso de Requisiciones: " + error, data: null, valid: false }
+        }
+    }
+
+    async aprovedRequisition(id: number): Promise<ValidateDataRequest> {
+        try {
+            const requisition = await this.getRequisitionById(id);
+            if (requisition.status == 'PENDING') {
+                const aproverequisition = await this.requisitionRepository.update(id, { status: RequisitionStatus.APPROVED })
+                return { message: "Requisicion aprobada con exito ", data: aproverequisition, valid: true }
+            }
+            return { message: "Error aprobando Requisicion ", data: requisition, valid: false }
+        } catch (error) {
+            return { message: "Error Aprobando Requisicion: " + error, data: null, valid: false }
+        }
+    }
+
+    async declinedRequisition(id: number): Promise<ValidateDataRequest> {
+        try {
+            const requisition = await this.getRequisitionById(id);
+            if (requisition.status == 'PENDING') {
+                const aproverequisition = await this.requisitionRepository.update(id, { status: RequisitionStatus.DECLINED })
+                return { message: "Requisicion aprobada con exito ", data: aproverequisition, valid: true }
+            }
+            return { message: "Error aprobando Requisicion ", data: requisition, valid: false }
+        } catch (error) {
+            return { message: "Error Aprobando Requisicion: " + error, data: null, valid: false }
+        }
+    }
+
+    async getRequisitionsByUser(id: number): Promise<ValidateDataRequest> {
+        try {
+            const user = await this.usersService.findOneById(id);
+            const getRequisitions = this.requisitionRepository.find({
+                where: {
+                    currentState: In([user.department])
+                }
+            })
+            return { message: "Requisiciones por departamento ", data: getRequisitions, valid: true }
+
+        } catch (error) {
+            return { message: "Error obteniendo Requisiciones por Departamento: " + error, data: null, valid: false }
+        }
     }
 
     // Methods Aux
     async getRequisitionById(id: number): Promise<Requisition> {
         return await this.requisitionRepository.findOne({
-            where:{
+            where: {
                 id: id
             }
         })
@@ -124,7 +152,7 @@ export class RequisitionService {
         const today = new Date();
         const month = today.getMonth() + 1;
         const day = today.getDate();
-        const year = today.getFullYear();        
+        const year = today.getFullYear();
         return `${month.toString().padStart(2, "0")}/${day.toString().padStart(2, "0")}/${year},`;
     }
 
