@@ -3,8 +3,9 @@ import { Requisition, RequisitionStatus, RequisitionDepartmentStatus } from './r
 import { UpdateRequisitionDto } from './dto/requisition.dto';
 import { UsersService } from '../users/users.service';
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, In } from "typeorm";
+import { Repository, In, Like } from "typeorm";
 import { ValidateDataRequest } from 'src/dto/global.dto';
+import { log } from 'util';
 
 
 @Injectable()
@@ -37,17 +38,17 @@ export class RequisitionService {
                 status: RequisitionStatus.INITIATED,
             }
             const newRequisition = this.requisitionRepository.create(requisition);
-            const createrequisition = this.requisitionRepository.save(newRequisition)
+            const createrequisition = await this.requisitionRepository.save(newRequisition)
             return { message: "Requisicion creada con exito ", data: createrequisition, valid: true }
         } catch (error) {
             return { message: "Error creando Requisicion: " + error, data: null, valid: false }
         }
     }
 
-    updateRequisition(id: number, updatedFields: UpdateRequisitionDto): ValidateDataRequest {
+    async updateRequisition(id: number, updatedFields: UpdateRequisitionDto): Promise<ValidateDataRequest> {
 
         try {
-            const updaterequisition = this.requisitionRepository.update({ id }, updatedFields)
+            const updaterequisition =await this.requisitionRepository.update({ id }, updatedFields)
             return { message: "Requisicion actualizada con exito", data: updaterequisition, valid: true }
         } catch (error) {
             return { message: "Error actualizando Requisicion: " + error, data: null, valid: false }
@@ -124,14 +125,16 @@ export class RequisitionService {
         }
     }
 
-    async getRequisitionsByUser(id: number): Promise<ValidateDataRequest> {
+    async getRequisitionsByUser(username: string): Promise<ValidateDataRequest> {
         try {
-            const user = await this.usersService.findOneById(id);
-            const getRequisitions = this.requisitionRepository.find({
+            const user = await this.usersService.findOne(username);
+            const userDepartment: RequisitionDepartmentStatus = RequisitionDepartmentStatus[user.department];
+            const getRequisitions = await this.requisitionRepository.find({
                 where: {
-                    currentState: In([user.department])
+                    currentState: userDepartment
                 }
             })
+            
             return { message: "Requisiciones por departamento ", data: getRequisitions, valid: true }
 
         } catch (error) {

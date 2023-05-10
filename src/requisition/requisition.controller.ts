@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put,Request } from '@nestjs/common';
 import { RequisitionService } from './requisition.service';
 import { CreateRequisitionDto, UpdateRequisitionDto } from './dto/requisition.dto'
 
@@ -44,9 +44,9 @@ export class RequisitionController {
         return this.requisitionService.changeProcessRequisition(id)
     }
 
-    @Post('bydepartment/:id')
-    getRequisitionsByUser(@Param('id') id: number){
-        return this.requisitionService.getRequisitionsByUser(id)
+    @Get('bydepartment')
+    getRequisitionsByUser(@Request() req){        
+        return this.requisitionService.getRequisitionsByUser(req.user.username)
     }
 
 }

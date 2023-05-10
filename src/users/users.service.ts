@@ -36,7 +36,7 @@ export class UsersService {
         status: UserStatus.ACTIVE,
       };
       const newUser = this.userRepository.create(user);
-      const createuserSuccs = this.userRepository.save(newUser)
+      const createuserSuccs =await  this.userRepository.save(newUser)
       return { message: "Usuario creado con exito ", data: createuserSuccs, valid: true }
     } catch (error) {
       return { message: "Error creando Usuario: " + error, data: null, valid: false }

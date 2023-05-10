@@ -9,6 +9,7 @@ export enum RequisitionStatus {
 }
 
 export enum RequisitionDepartmentStatus{
+    DEVELOPER = "DEVELOPER",
     DECANATURA = 'DECANATURA',
     CONTABLE = 'CONTABLE',
     REACTORIA = 'RECTORIA',
