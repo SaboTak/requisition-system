@@ -13,6 +13,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
     password: process.env.DB_PASS,
     port:parseInt(process.env.DB_PORT),
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
+    dropSchema:false,
     synchronize : false,
     ssl: {
       rejectUnauthorized: false,

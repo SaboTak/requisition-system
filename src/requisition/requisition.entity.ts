@@ -23,7 +23,7 @@ export class Requisition {
     id : number
 
     @Column()
-    tittle : string
+    title : string
 
     @Column()
     description : string

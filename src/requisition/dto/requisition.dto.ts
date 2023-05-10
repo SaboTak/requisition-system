@@ -5,7 +5,7 @@ export class CreateRequisitionDto {
     
     @IsNotEmpty()
     @IsString()
-    tittle: string
+    title: string
 
     @IsNotEmpty()
     @IsString()
@@ -32,7 +32,7 @@ export class CreateRequisitionDto {
 export class UpdateRequisitionDto {
     @IsString()
     @IsOptional()
-    tittle?: string
+    title?: string
 
     @IsString()
     @IsOptional()

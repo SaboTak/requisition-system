@@ -14,9 +14,19 @@ export class RequisitionController {
         return this.requisitionService.getRequisitions()
     }
 
+    @Get('bydepartment')
+    getRequisitionsByUser(@Request() req){        
+        return this.requisitionService.getRequisitionsByUser(req.user.username)
+    }
+
+    @Get(':id')
+    getRequisition(@Param('id') id: number){
+        return this.requisitionService.getRequisition(id)
+    }
+
     @Post()
     createRequisition(@Body() newrequisition: CreateRequisitionDto){
-        return this.requisitionService.createRequisition(newrequisition.tittle, newrequisition.description, newrequisition.image, newrequisition.process, newrequisition.currentProcess, newrequisition.currentState)
+        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.description, newrequisition.image, newrequisition.process, newrequisition.currentProcess, newrequisition.currentState)
     }
 
     @Delete(':id')
@@ -44,9 +54,6 @@ export class RequisitionController {
         return this.requisitionService.changeProcessRequisition(id)
     }
 
-    @Get('bydepartment')
-    getRequisitionsByUser(@Request() req){        
-        return this.requisitionService.getRequisitionsByUser(req.user.username)
-    }
+    
 
 }

@@ -27,7 +27,7 @@ export class AuthService {
         const access_token= await this.jwtService.signAsync(payload);
         
         return {
-          message: "Usuario no encontrado", data: access_token, valid: true
+          message: "Usuario encontrado", data: access_token, valid: true
         };
       } else {
         return { message: "Usuario no encontrado", data: null, valid: false };

@@ -23,10 +23,23 @@ export class RequisitionService {
         }
     }
 
-    async createRequisition(tittle: string, description: string, image: string, process: string, currentProcess: string, currentState: RequisitionDepartmentStatus): Promise<ValidateDataRequest> {
+    async getRequisition(id: number): Promise<ValidateDataRequest> {
+        try {
+            const data = await this.requisitionRepository.findOne({
+                where:{
+                    id: id
+                }
+            });
+            return { message: "Requisicion ", data: data, valid: true }
+        } catch (error) {
+            return { message: "Error obteniendo Requisicione: " + error, data: null, valid: false }
+        }
+    }
+
+    async createRequisition(title: string, description: string, image: string, process: string, currentProcess: string, currentState: RequisitionDepartmentStatus): Promise<ValidateDataRequest> {
         try {
             const requisition = {
-                tittle,
+                title,
                 description,
                 observation: '',
                 image,
