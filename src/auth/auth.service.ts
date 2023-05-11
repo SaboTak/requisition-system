@@ -24,17 +24,17 @@ export class AuthService {
         }
 
         const payload = { username: user.username, sub: user.id };
-        const access_token= await this.jwtService.signAsync(payload);
-        
+        const access_token = await this.jwtService.signAsync(payload);
+
         return {
-          message: "Usuario encontrado", data: access_token, valid: true
+          message: "Usuario encontrado", data: { access_token: access_token, image: user.image }, valid: true
         };
       } else {
         return { message: "Usuario no encontrado", data: null, valid: false };
       }
 
     } catch (error) {
-      return {message: "Error encontrando usuario: " + error, data: null, valid:false}
+      return { message: "Error encontrando usuario: " + error, data: null, valid: false }
     }
   }
 
@@ -43,4 +43,16 @@ export class AuthService {
     return bcrypt.compare(pass, hashedPass);
   }
 
+  async verifyAdm(username: string) {
+    try {
+      const user = await this.usersService.findOne(username);
+      if (user.username == 'sabo') {
+        return true
+      } else {
+        return false
+      }
+    }catch(err){
+      return false;
+    }
+  }
 }

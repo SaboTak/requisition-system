@@ -17,6 +17,7 @@ FROM node:16-alpine as builder
 
 ENV NODE_ENV build
 
+
 USER node
 WORKDIR /home/node
 

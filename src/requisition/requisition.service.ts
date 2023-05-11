@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Requisition, RequisitionStatus, RequisitionDepartmentStatus } from './requisition.entity'
 import { UpdateRequisitionDto } from './dto/requisition.dto';
 import { UsersService } from '../users/users.service';
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, In, Like } from "typeorm";
+import { Repository } from "typeorm";
 import { ValidateDataRequest } from 'src/dto/global.dto';
-import { log } from 'util';
 import { UserStatus } from 'src/users/users.entity';
+// import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 
 @Injectable()
@@ -37,25 +37,30 @@ export class RequisitionService {
         }
     }
 
-    async createRequisition(title: string, description: string, image: string, process: string, username: string): Promise<ValidateDataRequest> {
+    async createRequisition(title: string, description: string, process: string, username: string, file: Express.Multer.File): Promise<ValidateDataRequest> {
         try {
             const user = await this.usersService.findOne(username);
             if (user.status === UserStatus.ACTIVE) {
-                const requisition = {
-                    title,
-                    description,
-                    observation: '',
-                    image,
-                    process,
-                    firms: '',
-                    currentDates: '',
-                    currentProcess: process,
-                    currentState : RequisitionDepartmentStatus[user.department],
-                    status: RequisitionStatus.INITIATED,
+                const upImage = await this.uploadImageToCloudinary(file);
+                if (upImage.valid == true) {
+                    const requisition = {
+                        title,
+                        description,
+                        observation: '',
+                        image: upImage.data.toString(),
+                        process,
+                        firms: '',
+                        currentDates: '',
+                        currentProcess: process,
+                        currentState: RequisitionDepartmentStatus[user.department],
+                        status: RequisitionStatus.INITIATED,
+                    }
+                    const newRequisition = this.requisitionRepository.create(requisition);
+                    const createrequisition = await this.requisitionRepository.save(newRequisition)
+                    return { message: "Requisicion creada con exito ", data: createrequisition, valid: true }
+                } else {
+                    return { message: "Error subiendo Imagen ", data: null, valid: false }
                 }
-                const newRequisition = this.requisitionRepository.create(requisition);
-                const createrequisition = await this.requisitionRepository.save(newRequisition)
-                return { message: "Requisicion creada con exito ", data: createrequisition, valid: true }
             } else {
                 return { message: "Usuario invalido para crear Requisicion ", data: null, valid: false }
             }
@@ -65,11 +70,26 @@ export class RequisitionService {
         }
     }
 
-    async updateRequisition(id: number, updatedFields: UpdateRequisitionDto): Promise<ValidateDataRequest> {
+    async updateRequisition(id: number, title: string, description: string, file: Express.Multer.File, username: string): Promise<ValidateDataRequest> {
 
         try {
-            const updaterequisition = await this.requisitionRepository.update({ id }, updatedFields)
-            return { message: "Requisicion actualizada con exito", data: updaterequisition, valid: true }
+            const user = await this.usersService.findOne(username);
+            if (user.status === UserStatus.ACTIVE) {
+                const upImage = await this.uploadImageToCloudinary(file);
+                if (upImage.valid == true) {
+                    const updaterequisition = await this.requisitionRepository.update({ id }, {
+                        title: title,
+                        description: description,
+                        image: upImage.data.toString()
+                    })
+                    return { message: "Requisicion actualizada con exito", data: updaterequisition, valid: true }
+                } else {
+                    return { message: "Error subiendo Imagen ", data: null, valid: false }
+                }
+            } else {
+                return { message: "Usuario invalido para editar Requisicion ", data: null, valid: false }
+            }
+
         } catch (error) {
             return { message: "Error actualizando Requisicion: " + error, data: null, valid: false }
         }
@@ -139,7 +159,7 @@ export class RequisitionService {
         }
     }
 
-    async aprovedRequisition(id: number,observacion: string): Promise<ValidateDataRequest> {
+    async aprovedRequisition(id: number, observacion: string): Promise<ValidateDataRequest> {
         try {
             const requisition = await this.getRequisitionById(id);
             if (requisition.status == RequisitionStatus.PENDING || requisition.status == RequisitionStatus.IN_PROGRESS || requisition.status == RequisitionStatus.INITIATED) {
@@ -152,7 +172,7 @@ export class RequisitionService {
         }
     }
 
-    async declinedRequisition(id: number,observacion: string): Promise<ValidateDataRequest> {
+    async declinedRequisition(id: number, observacion: string): Promise<ValidateDataRequest> {
         try {
             const requisition = await this.getRequisitionById(id);
             if (requisition.status == RequisitionStatus.PENDING || requisition.status == RequisitionStatus.IN_PROGRESS || requisition.status == RequisitionStatus.INITIATED) {
@@ -174,7 +194,7 @@ export class RequisitionService {
                     where: {
                         currentState: userDepartment
                     }
-                })                
+                })
                 return { message: "Requisiciones por departamento ", data: getRequisitions, valid: true }
             } else {
                 return { message: "Usuario invalido para obtener requisiciones ", data: null, valid: false }
@@ -182,6 +202,25 @@ export class RequisitionService {
 
         } catch (error) {
             return { message: "Error obteniendo Requisiciones por Departamento: " + error, data: null, valid: false }
+        }
+    }
+
+    async getDepartments(username: string) {
+        try {
+            const user = await this.usersService.findOne(username);
+            if (user.status === UserStatus.ACTIVE) {
+                const departamentos: string[] = [];
+
+                for (const departamento in RequisitionDepartmentStatus) {
+                    departamentos.push(RequisitionDepartmentStatus[departamento]);
+                }
+                return { message: "Departamentos obtenidos correctamente", data: departamentos, valid: true }
+
+            } else {
+                return { message: "Error usuario invalido: ", data: null, valid: false }
+            }
+        } catch (error) {
+            return { message: "Error obteniendo Departamentos: " + error, data: null, valid: false }
         }
     }
 
@@ -198,5 +237,38 @@ export class RequisitionService {
         const newData = new Date();
         return newData.toISOString();
     }
+
+    async uploadImageToCloudinary(file: Express.Multer.File): Promise<ValidateDataRequest> {
+        const cloudinary = require('cloudinary').v2;
+        const fs = require('fs');
+        // Return "https" URLs by setting secure: true
+        cloudinary.config({
+            secure: true
+        });
+
+        // Ruta temporal del archivo cargado
+        const imagePath = file.path;
+        try {
+            // Subir el archivo a Cloudinary
+            const datenow = new Date();
+            const result = await cloudinary.uploader.upload(imagePath, {
+                public_id: "Unilibre-" + datenow,
+                folder: "Unilibre"
+            });
+            // La imagen se ha subido exitosamente a Cloudinary
+            const imageUrl = result.secure_url;
+            // Elimina la carpeta ./uploads/
+            fs.unlink(imagePath, (err) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+            });
+            return { message: "Imagen subida con exito", data: imageUrl, valid: true }
+        } catch (error) {
+            return { message: "Departamentos obtenidos correctamente" + error, data: null, valid: false }
+        }
+    }
+
 
 }

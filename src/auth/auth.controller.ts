@@ -30,4 +30,12 @@ export class AuthController {
   getProfile(@Request() req) {
     return req.user;
   }
+
+  @Get('verifyAdm')
+  verifyAdm(@Request() req) {
+    return this.authService.verifyAdm(req.user.username)
+  }
+
+
+
 }

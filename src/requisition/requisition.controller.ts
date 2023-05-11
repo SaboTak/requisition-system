@@ -1,56 +1,66 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put,Request } from '@nestjs/common';
+import { Body, Controller, Delete, Get, InternalServerErrorException, Param, Patch, Post, Put, Request, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { RequisitionService } from './requisition.service';
 import { CreateRequisitionDto, UpdateRequisitionDto } from './dto/requisition.dto'
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as path from 'path';
 
 @Controller('requisition')
 export class RequisitionController {
 
     constructor(
-        private requisitionService : RequisitionService
-    ){}
+        private requisitionService: RequisitionService
+    ) { }
 
     @Get()
-    getRequisitions(){
+    getRequisitions() {
         return this.requisitionService.getRequisitions()
     }
 
     @Get('bydepartment')
-    getRequisitionsByUser(@Request() req){        
+    getRequisitionsByUser(@Request() req) {
         return this.requisitionService.getRequisitionsByUser(req.user.username)
     }
 
+    @Get('departments')
+    getDepartments(@Request() req) {
+        return this.requisitionService.getDepartments(req.user.username)
+    }
+
     @Get(':id')
-    getRequisition(@Param('id') id: number,){
+    getRequisition(@Param('id') id: number,) {
         return this.requisitionService.getRequisition(id)
     }
+
     @Patch('declined/:id')
-    declinedRequisition(@Param('id') id: number,@Param('observacion') observacion: string){
-        return this.requisitionService.declinedRequisition(id,observacion);
+    declinedRequisition(@Param('id') id: number, @Param('observacion') observacion: string) {
+        return this.requisitionService.declinedRequisition(id, observacion);
     }
 
     @Patch('aproved/:id')
-    aprovedRequisition(@Param('id') id: number,@Param('observacion') observacion: string){
-        return this.requisitionService.aprovedRequisition(id,observacion);
+    aprovedRequisition(@Param('id') id: number, @Param('observacion') observacion: string) {
+        return this.requisitionService.aprovedRequisition(id, observacion);
     }
 
     @Patch('process/:id')
-    changeProcessRequisition(@Param('id') id: number,@Request() req){
-        return this.requisitionService.changeProcessRequisition(id,req.user.username)
+    changeProcessRequisition(@Param('id') id: number, @Request() req) {
+        return this.requisitionService.changeProcessRequisition(id, req.user.username)
     }
 
     @Post()
-    createRequisition(@Body() newrequisition: CreateRequisitionDto, @Request() req){
-        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.description, newrequisition.image, newrequisition.process, req.user.username)
+    @UseInterceptors(FileInterceptor('file', { dest: './uploads' }))
+    createRequisition(@Body() newrequisition: CreateRequisitionDto, @Request() req,@UploadedFile() file: Express.Multer.File) {
+        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.description, newrequisition.process, req.user.username,file)
     }
 
     @Delete(':id')
-    deleteRequisition(@Param('id') id: number){
+    deleteRequisition(@Param('id') id: number) {
         return this.requisitionService.deleteRequisition(id)
     }
 
     @Patch(':id')
-    updateRequisition(@Param('id') id: number, @Body() updatedFields: UpdateRequisitionDto){
-        return this.requisitionService.updateRequisition(id, updatedFields)
+    @UseInterceptors(FileInterceptor('file', { dest: './uploads' }))
+    updateRequisition(@Param('id') id: number, @Body() updatedFields: UpdateRequisitionDto,@Request() req,@UploadedFile() file: Express.Multer.File) {
+        return this.requisitionService.updateRequisition(id, updatedFields.title,updatedFields.description,file,req.user.username)
     }
 
 }

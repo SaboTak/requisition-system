@@ -3,6 +3,7 @@ import { AuthModule } from './auth/auth.module';
 import { RequisitionModule } from './requisition/requisition.module';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm'
+// import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -18,8 +19,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
     ssl: {
       rejectUnauthorized: false,
     }
-
-  }), AuthModule, RequisitionModule, UsersModule],
+  }),AuthModule, RequisitionModule, UsersModule],
   controllers: [],
   providers: [],
 })

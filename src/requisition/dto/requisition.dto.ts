@@ -13,10 +13,6 @@ export class CreateRequisitionDto {
 
     @IsNotEmpty()
     @IsString()
-    image: string
-
-    @IsNotEmpty()
-    @IsString()
     process: string
 
 }

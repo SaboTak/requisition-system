@@ -17,6 +17,9 @@ export class User {
     @Column()
     name: string
 
+    @Column()
+    image: string
+
     @Column({unique:true})
     username : string
 
