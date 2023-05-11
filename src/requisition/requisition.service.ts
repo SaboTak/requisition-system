@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, In, Like } from "typeorm";
 import { ValidateDataRequest } from 'src/dto/global.dto';
 import { log } from 'util';
+import { UserStatus } from 'src/users/users.entity';
 
 
 @Injectable()
@@ -26,7 +27,7 @@ export class RequisitionService {
     async getRequisition(id: number): Promise<ValidateDataRequest> {
         try {
             const data = await this.requisitionRepository.findOne({
-                where:{
+                where: {
                     id: id
                 }
             });
@@ -36,23 +37,29 @@ export class RequisitionService {
         }
     }
 
-    async createRequisition(title: string, description: string, image: string, process: string, currentProcess: string, currentState: RequisitionDepartmentStatus): Promise<ValidateDataRequest> {
+    async createRequisition(title: string, description: string, image: string, process: string, username: string): Promise<ValidateDataRequest> {
         try {
-            const requisition = {
-                title,
-                description,
-                observation: '',
-                image,
-                process,
-                firms: '',
-                currentDates: '',
-                currentProcess,
-                currentState,
-                status: RequisitionStatus.INITIATED,
+            const user = await this.usersService.findOne(username);
+            if (user.status === UserStatus.ACTIVE) {
+                const requisition = {
+                    title,
+                    description,
+                    observation: '',
+                    image,
+                    process,
+                    firms: '',
+                    currentDates: '',
+                    currentProcess: process,
+                    currentState : RequisitionDepartmentStatus[user.department],
+                    status: RequisitionStatus.INITIATED,
+                }
+                const newRequisition = this.requisitionRepository.create(requisition);
+                const createrequisition = await this.requisitionRepository.save(newRequisition)
+                return { message: "Requisicion creada con exito ", data: createrequisition, valid: true }
+            } else {
+                return { message: "Usuario invalido para crear Requisicion ", data: null, valid: false }
             }
-            const newRequisition = this.requisitionRepository.create(requisition);
-            const createrequisition = await this.requisitionRepository.save(newRequisition)
-            return { message: "Requisicion creada con exito ", data: createrequisition, valid: true }
+
         } catch (error) {
             return { message: "Error creando Requisicion: " + error, data: null, valid: false }
         }
@@ -61,7 +68,7 @@ export class RequisitionService {
     async updateRequisition(id: number, updatedFields: UpdateRequisitionDto): Promise<ValidateDataRequest> {
 
         try {
-            const updaterequisition =await this.requisitionRepository.update({ id }, updatedFields)
+            const updaterequisition = await this.requisitionRepository.update({ id }, updatedFields)
             return { message: "Requisicion actualizada con exito", data: updaterequisition, valid: true }
         } catch (error) {
             return { message: "Error actualizando Requisicion: " + error, data: null, valid: false }
@@ -79,45 +86,65 @@ export class RequisitionService {
         }
     }
 
-    async changeProcessRequisition(id: number): Promise<ValidateDataRequest> {
+    async changeProcessRequisition(id: number, username: string): Promise<ValidateDataRequest> {
         try {
-            //Logic for new state of the Requisition
-            const requisition = await this.getRequisitionById(id);
-            const newProcessStatus = requisition.currentProcess.split(",");
-            newProcessStatus.shift();
-            const resultNewProcess = newProcessStatus.join(",");
+            const user = await this.usersService.findOne(username);
+            if (user.status === UserStatus.ACTIVE) {
+                //Logic for new state of the Requisition
+                const requisition = await this.getRequisitionById(id);
+                const newProcessStatus = requisition.currentProcess.split(",");
+                const newFirms = requisition.firms.split(",");
+                const newRecordDates = requisition.currentDates.split(",");
 
-            //Logic record for the changes process
-            const fechaActualTexto = this.fechaActual();
-            const newRecordDates = requisition.currentDates.split(",");
+                newProcessStatus.shift();
 
-            if (requisition.currentProcess != "") {
-                newRecordDates.push(fechaActualTexto);
+                const fechaActualTexto = this.fechaActual();
+
+                if (requisition.currentProcess != "") {
+                    newRecordDates.push(fechaActualTexto);
+                    newFirms.push(user.firm)
+                }
+                let resultFirms = newFirms.join(",")
+                const resultNewProcess = newProcessStatus.join(",");
+                let resultDates = newRecordDates.join(",");
+
+                if (resultDates.endsWith(',')) {
+                    resultDates = resultDates.slice(0, -1);
+                }
+                if (resultDates.startsWith(',')) {
+                    resultDates = resultDates.slice(1);
+                }
+
+                if (resultFirms.endsWith(',')) {
+                    resultFirms = resultFirms.slice(0, -1);
+                }
+                if (resultFirms.startsWith(',')) {
+                    resultFirms = resultFirms.slice(1);
+                }
+
+                // Set new data
+                const UpdateRequisition = await this.requisitionRepository.update(id, {
+                    firms: resultFirms,
+                    currentProcess: resultNewProcess,
+                    currentState: newProcessStatus.length > 0 ? RequisitionDepartmentStatus[newProcessStatus[0]] : requisition.currentState,
+                    currentDates: resultDates,
+                    status: newProcessStatus.length == 0 ? RequisitionStatus.PENDING : RequisitionStatus.IN_PROGRESS,
+                })
+                return { message: "Requisicion actualizada con exito", data: UpdateRequisition, valid: true }
+            } else {
+                return { message: "Usuario invalido para cambiar estado de requisicion ", data: null, valid: false }
             }
-
-            const resultNewDates = newRecordDates.filter((date) => date !== '').join(",");
-
-            // Set new data
-            const UpdateRequisition = await this.requisitionRepository.update(id, {
-                currentProcess: resultNewProcess,
-                currentState: newProcessStatus.length > 0 ? RequisitionDepartmentStatus[newProcessStatus[0]] : requisition.currentState,
-                currentDates: resultNewDates,
-                status: newProcessStatus.length == 0 ? RequisitionStatus.PENDING : RequisitionStatus.IN_PROGRESS,
-
-            })
-            return { message: "Requisicion actualizada con exito", data: UpdateRequisition, valid: true }
-
         } catch (error) {
             return { message: "Error avanzando en el proceso de Requisiciones: " + error, data: null, valid: false }
         }
     }
 
-    async aprovedRequisition(id: number): Promise<ValidateDataRequest> {
+    async aprovedRequisition(id: number,observacion: string): Promise<ValidateDataRequest> {
         try {
             const requisition = await this.getRequisitionById(id);
-            if (requisition.status == 'PENDING') {
-                const aproverequisition = await this.requisitionRepository.update(id, { status: RequisitionStatus.APPROVED })
-                return { message: "Requisicion aprobada con exito ", data: aproverequisition, valid: true }
+            if (requisition.status == RequisitionStatus.PENDING || requisition.status == RequisitionStatus.IN_PROGRESS || requisition.status == RequisitionStatus.INITIATED) {
+                const aproverequisition = await this.requisitionRepository.update(id, { status: RequisitionStatus.APPROVED, observation: observacion })
+                return { message: "Requisicion aprobada con exito ", data: null, valid: true }
             }
             return { message: "Error aprobando Requisicion ", data: requisition, valid: false }
         } catch (error) {
@@ -125,12 +152,12 @@ export class RequisitionService {
         }
     }
 
-    async declinedRequisition(id: number): Promise<ValidateDataRequest> {
+    async declinedRequisition(id: number,observacion: string): Promise<ValidateDataRequest> {
         try {
             const requisition = await this.getRequisitionById(id);
-            if (requisition.status == 'PENDING') {
-                const aproverequisition = await this.requisitionRepository.update(id, { status: RequisitionStatus.DECLINED })
-                return { message: "Requisicion aprobada con exito ", data: aproverequisition, valid: true }
+            if (requisition.status == RequisitionStatus.PENDING || requisition.status == RequisitionStatus.IN_PROGRESS || requisition.status == RequisitionStatus.INITIATED) {
+                const aproverequisition = await this.requisitionRepository.update(id, { status: RequisitionStatus.DECLINED, observation: observacion })
+                return { message: "Requisicion aprobada con exito ", data: null, valid: true }
             }
             return { message: "Error aprobando Requisicion ", data: requisition, valid: false }
         } catch (error) {
@@ -141,14 +168,17 @@ export class RequisitionService {
     async getRequisitionsByUser(username: string): Promise<ValidateDataRequest> {
         try {
             const user = await this.usersService.findOne(username);
-            const userDepartment: RequisitionDepartmentStatus = RequisitionDepartmentStatus[user.department];
-            const getRequisitions = await this.requisitionRepository.find({
-                where: {
-                    currentState: userDepartment
-                }
-            })
-            
-            return { message: "Requisiciones por departamento ", data: getRequisitions, valid: true }
+            if (user.status === UserStatus.ACTIVE) {
+                const userDepartment: RequisitionDepartmentStatus = RequisitionDepartmentStatus[user.department];
+                const getRequisitions = await this.requisitionRepository.find({
+                    where: {
+                        currentState: userDepartment
+                    }
+                })                
+                return { message: "Requisiciones por departamento ", data: getRequisitions, valid: true }
+            } else {
+                return { message: "Usuario invalido para obtener requisiciones ", data: null, valid: false }
+            }
 
         } catch (error) {
             return { message: "Error obteniendo Requisiciones por Departamento: " + error, data: null, valid: false }
@@ -165,12 +195,8 @@ export class RequisitionService {
     }
 
     fechaActual(): string {
-        const today = new Date();
-        const month = today.getMonth() + 1;
-        const day = today.getDate();
-        const year = today.getFullYear();
-        return `${month.toString().padStart(2, "0")}/${day.toString().padStart(2, "0")}/${year},`;
+        const newData = new Date();
+        return newData.toISOString();
     }
-
 
 }

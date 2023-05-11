@@ -1,4 +1,4 @@
-import { Entity , Column, PrimaryGeneratedColumn} from 'typeorm'
+import { Entity , Column, PrimaryGeneratedColumn, CreateDateColumn} from 'typeorm'
 
 export enum RequisitionStatus {
     INITIATED = 'INITIATED',
@@ -51,5 +51,8 @@ export class Requisition {
 
     @Column()
     status : RequisitionStatus
+
+    @CreateDateColumn()
+    fechaCreacion: Date;
 
 }

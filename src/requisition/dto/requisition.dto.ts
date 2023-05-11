@@ -19,13 +19,6 @@ export class CreateRequisitionDto {
     @IsString()
     process: string
 
-    @IsNotEmpty()
-    @IsString()
-    currentProcess: string
-
-    @IsNotEmpty()
-    @IsString()
-    currentState: RequisitionDepartmentStatus
 }
 
 

@@ -20,13 +20,27 @@ export class RequisitionController {
     }
 
     @Get(':id')
-    getRequisition(@Param('id') id: number){
+    getRequisition(@Param('id') id: number,){
         return this.requisitionService.getRequisition(id)
+    }
+    @Patch('declined/:id')
+    declinedRequisition(@Param('id') id: number,@Param('observacion') observacion: string){
+        return this.requisitionService.declinedRequisition(id,observacion);
+    }
+
+    @Patch('aproved/:id')
+    aprovedRequisition(@Param('id') id: number,@Param('observacion') observacion: string){
+        return this.requisitionService.aprovedRequisition(id,observacion);
+    }
+
+    @Patch('process/:id')
+    changeProcessRequisition(@Param('id') id: number,@Request() req){
+        return this.requisitionService.changeProcessRequisition(id,req.user.username)
     }
 
     @Post()
-    createRequisition(@Body() newrequisition: CreateRequisitionDto){
-        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.description, newrequisition.image, newrequisition.process, newrequisition.currentProcess, newrequisition.currentState)
+    createRequisition(@Body() newrequisition: CreateRequisitionDto, @Request() req){
+        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.description, newrequisition.image, newrequisition.process, req.user.username)
     }
 
     @Delete(':id')
@@ -38,22 +52,5 @@ export class RequisitionController {
     updateRequisition(@Param('id') id: number, @Body() updatedFields: UpdateRequisitionDto){
         return this.requisitionService.updateRequisition(id, updatedFields)
     }
-
-    @Post('declined/:id')
-    declinedRequisition(@Param('id') id: number){
-        return this.requisitionService.declinedRequisition(id);
-    }
-
-    @Post('aproved/:id')
-    aprovedRequisition(@Param('id') id: number){
-        return this.requisitionService.aprovedRequisition(id);
-    }
-
-    @Post('process/:id')
-    changeProcessRequisition(@Param('id') id: number){
-        return this.requisitionService.changeProcessRequisition(id)
-    }
-
-    
 
 }
