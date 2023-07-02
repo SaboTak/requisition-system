@@ -27,8 +27,8 @@ export class RequisitionController {
     }
 
     @Get(':id')
-    getRequisition(@Param('id') id: number,) {
-        return this.requisitionService.getRequisition(id)
+    getRequisition(@Param('id') id: number,@Request() req) {
+        return this.requisitionService.getRequisition(id,req.user.username)
     }
 
     @Patch('declined/:id')

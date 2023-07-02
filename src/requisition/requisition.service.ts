@@ -3,7 +3,7 @@ import { Requisition, RequisitionStatus, RequisitionDepartmentStatus } from './r
 import { UpdateRequisitionDto } from './dto/requisition.dto';
 import { UsersService } from '../users/users.service';
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { ValidateDataRequest } from 'src/dto/global.dto';
 import { UserStatus } from 'src/users/users.entity';
 // import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -24,14 +24,25 @@ export class RequisitionService {
         }
     }
 
-    async getRequisition(id: number): Promise<ValidateDataRequest> {
+    async getRequisition(id: number, username:string): Promise<ValidateDataRequest> {
         try {
-            const data = await this.requisitionRepository.findOne({
-                where: {
-                    id: id
+            const user = await this.usersService.findOne(username);
+            if (user.status === UserStatus.ACTIVE ) {
+                const data = await this.requisitionRepository.findOne({
+                    where: {
+                        id: id
+                    }
+                });
+                if(user.department === data.currentState){
+                    return { message: "Requisicion ", data: data, valid: true }
+                }else{
+                    return { message: "No esta disponible para tu departamento", data: null, valid: false }
                 }
-            });
-            return { message: "Requisicion ", data: data, valid: true }
+            }else{
+                return { message: "Usuario invalido para ver requision ", data: null, valid: false }
+
+            }
+            
         } catch (error) {
             return { message: "Error obteniendo Requisicione: " + error, data: null, valid: false }
         }
@@ -177,7 +188,7 @@ export class RequisitionService {
             const requisition = await this.getRequisitionById(id);
             if (requisition.status == RequisitionStatus.PENDING || requisition.status == RequisitionStatus.IN_PROGRESS || requisition.status == RequisitionStatus.INITIATED) {
                 const aproverequisition = await this.requisitionRepository.update(id, { status: RequisitionStatus.DECLINED, observation: observacion })
-                return { message: "Requisicion aprobada con exito ", data: null, valid: true }
+                return { message: "Requisicion rechazada con exito ", data: null, valid: true }
             }
             return { message: "Error aprobando Requisicion ", data: requisition, valid: false }
         } catch (error) {
@@ -189,12 +200,12 @@ export class RequisitionService {
         try {
             const user = await this.usersService.findOne(username);
             if (user.status === UserStatus.ACTIVE) {
-                const userDepartment: RequisitionDepartmentStatus = RequisitionDepartmentStatus[user.department];
+                
                 const getRequisitions = await this.requisitionRepository.find({
                     where: {
-                        currentState: userDepartment
+                        currentState: In([user.department]),
                     }
-                })
+                })                
                 return { message: "Requisiciones por departamento ", data: getRequisitions, valid: true }
             } else {
                 return { message: "Usuario invalido para obtener requisiciones ", data: null, valid: false }
