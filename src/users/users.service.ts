@@ -26,6 +26,7 @@ export class UsersService {
       const HashPassword = await this.verifyPass(password);
 
       const upImage = await this.uploadImageToCloudinary(file);
+      
       if (upImage.valid == true) {
         const user = {
           name,
@@ -114,7 +115,7 @@ export class UsersService {
         });
         return { message: "Imagen subida con exito", data: imageUrl, valid: true }
     } catch (error) {
-        return { message: "Departamentos obtenidos correctamente" + error, data: null, valid: false }
+        return { message: "Error con Cloudinary" + error, data: null, valid: false }
     }
 }
 

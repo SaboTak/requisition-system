@@ -71,3 +71,9 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+
+## Recordar
+Inicializar variables de entorno en .env y ejecutar el comando de cloudinary:
+MAC = export CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME 
+WINDOWS= set CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
