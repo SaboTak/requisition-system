@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { Requisition, RequisitionStatus, RequisitionDepartmentStatus } from './requisition.entity'
 import { UpdateRequisitionDto } from './dto/requisition.dto';
 import { UsersService } from '../users/users.service';
@@ -24,25 +24,25 @@ export class RequisitionService {
         }
     }
 
-    async getRequisition(id: number, username:string): Promise<ValidateDataRequest> {
+    async getRequisition(id: number, username: string): Promise<ValidateDataRequest> {
         try {
             const user = await this.usersService.findOne(username);
-            if (user.status === UserStatus.ACTIVE ) {
+            if (user.status === UserStatus.ACTIVE) {
                 const data = await this.requisitionRepository.findOne({
                     where: {
                         id: id
                     }
                 });
-                if(user.department === data.currentState){
+                if (user.department === data.currentState) {
                     return { message: "Requisicion ", data: data, valid: true }
-                }else{
+                } else {
                     return { message: "No esta disponible para tu departamento", data: null, valid: false }
                 }
-            }else{
+            } else {
                 return { message: "Usuario invalido para ver requision ", data: null, valid: false }
 
             }
-            
+
         } catch (error) {
             return { message: "Error obteniendo Requisicione: " + error, data: null, valid: false }
         }
@@ -65,6 +65,8 @@ export class RequisitionService {
                         currentProcess: process,
                         currentState: RequisitionDepartmentStatus[user.department],
                         status: RequisitionStatus.INITIATED,
+                        number: 0,
+                        reference: ''
                     }
                     const newRequisition = this.requisitionRepository.create(requisition);
                     const createrequisition = await this.requisitionRepository.save(newRequisition)
@@ -170,11 +172,11 @@ export class RequisitionService {
         }
     }
 
-    async aprovedRequisition(id: number, observacion: string): Promise<ValidateDataRequest> {
+    async aprovedRequisition(id: number, observation: string): Promise<ValidateDataRequest> {
         try {
             const requisition = await this.getRequisitionById(id);
             if (requisition.status == RequisitionStatus.PENDING || requisition.status == RequisitionStatus.IN_PROGRESS || requisition.status == RequisitionStatus.INITIATED) {
-                const aproverequisition = await this.requisitionRepository.update(id, { status: RequisitionStatus.APPROVED, observation: observacion })
+                await this.requisitionRepository.update(id, { status: RequisitionStatus.APPROVED, observation: observation })
                 return { message: "Requisicion aprobada con exito ", data: null, valid: true }
             }
             return { message: "Error aprobando Requisicion ", data: requisition, valid: false }
@@ -183,16 +185,16 @@ export class RequisitionService {
         }
     }
 
-    async declinedRequisition(id: number, observacion: string): Promise<ValidateDataRequest> {
+    async declinedRequisition(id: number, observation: string): Promise<ValidateDataRequest> {
         try {
             const requisition = await this.getRequisitionById(id);
             if (requisition.status == RequisitionStatus.PENDING || requisition.status == RequisitionStatus.IN_PROGRESS || requisition.status == RequisitionStatus.INITIATED) {
-                const aproverequisition = await this.requisitionRepository.update(id, { status: RequisitionStatus.DECLINED, observation: observacion })
+                await this.requisitionRepository.update(id, { status: RequisitionStatus.DECLINED, observation: observation })
                 return { message: "Requisicion rechazada con exito ", data: null, valid: true }
             }
-            return { message: "Error aprobando Requisicion ", data: requisition, valid: false }
+            return { message: "Error Rechazando Requisicion ", data: requisition, valid: false }
         } catch (error) {
-            return { message: "Error Aprobando Requisicion: " + error, data: null, valid: false }
+            return { message: "Error Rechazando Requisicion: " + error, data: null, valid: false }
         }
     }
 
@@ -200,12 +202,11 @@ export class RequisitionService {
         try {
             const user = await this.usersService.findOne(username);
             if (user.status === UserStatus.ACTIVE) {
-                
                 const getRequisitions = await this.requisitionRepository.find({
                     where: {
                         currentState: In([user.department]),
                     }
-                })                
+                })
                 return { message: "Requisiciones por departamento ", data: getRequisitions, valid: true }
             } else {
                 return { message: "Usuario invalido para obtener requisiciones ", data: null, valid: false }

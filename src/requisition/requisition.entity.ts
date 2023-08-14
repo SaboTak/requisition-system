@@ -1,4 +1,4 @@
-import { Entity , Column, PrimaryGeneratedColumn, CreateDateColumn} from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm'
 
 export enum RequisitionStatus {
     INITIATED = 'INITIATED',
@@ -8,49 +8,56 @@ export enum RequisitionStatus {
     DECLINED = 'DECLINED'
 }
 
-export enum RequisitionDepartmentStatus{
+export enum RequisitionDepartmentStatus {
     // DEVELOPER = "DEVELOPER",
+    SINDICATURA = 'SINDICATURA',
+    PRESIDENCIA = 'PRESIDENCIA',
+    COMPRA = 'COMPRA',
     DECANATURA = 'DECANATURA',
-    CONTABLE = 'CONTABLE',
-    REACTORIA = 'RECTORIA',
-    QA = 'QA'
+    RECURSO_HUMANOS = 'RECURSO_HUMANOS',
 }
 
 @Entity()
 export class Requisition {
 
     @PrimaryGeneratedColumn()
-    id : number
+    id: number
 
     @Column()
-    title : string
+    title: string
 
     @Column()
-    description : string
+    description: string
 
     @Column()
-    observation : string
+    observation: string
 
     @Column()
-    image : string
+    image: string
 
     @Column()
-    process : string
+    process: string
 
     @Column()
     firms: string
 
     @Column()
     currentDates: string
-    
-    @Column()
-    currentProcess : string
 
     @Column()
-    currentState : RequisitionDepartmentStatus
+    currentProcess: string
 
     @Column()
-    status : RequisitionStatus
+    currentState: RequisitionDepartmentStatus
+
+    @Column()
+    reference: number
+
+    @CreateDateColumn()
+    number: number
+
+    @CreateDateColumn()
+    status: RequisitionStatus
 
     @CreateDateColumn()
     fechaCreacion: Date;

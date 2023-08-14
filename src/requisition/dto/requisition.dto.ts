@@ -14,6 +14,14 @@ export class CreateRequisitionDto {
     @IsNotEmpty()
     @IsString()
     process: string
+    
+    @IsNotEmpty()
+    @IsString()
+    number: number
+    
+    @IsNotEmpty()
+    @IsString()
+    reference: string
 
 }
 
@@ -48,4 +56,16 @@ export class UpdateProcessRequisitionDtop{
     @IsString()
     @IsOptional()
     status?: RequisitionStatus
+}
+
+export class DeclinedRequisitionDto {
+    @IsNotEmpty()
+    @IsString()
+    observation?: string
+}
+
+export class AprovedRequisitionDto {
+    @IsString()
+    @IsOptional()
+    observation?: string
 }

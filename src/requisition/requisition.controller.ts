@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, InternalServerErrorException, Param, Patch, Post, Put, Request, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { RequisitionService } from './requisition.service';
-import { CreateRequisitionDto, UpdateRequisitionDto } from './dto/requisition.dto'
+import { CreateRequisitionDto, UpdateRequisitionDto, DeclinedRequisitionDto, AprovedRequisitionDto } from './dto/requisition.dto'
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as path from 'path';
 
@@ -32,18 +32,18 @@ export class RequisitionController {
     }
 
     @Patch('declined/:id')
-    declinedRequisition(@Param('id') id: number, @Param('observacion') observacion: string) {
-        return this.requisitionService.declinedRequisition(id, observacion);
+    declinedRequisition(@Param('id') id: number, @Body() observation: DeclinedRequisitionDto) {
+        return this.requisitionService.declinedRequisition(id, observation.observation);
     }
 
     @Patch('aproved/:id')
-    aprovedRequisition(@Param('id') id: number, @Param('observacion') observacion: string) {
-        return this.requisitionService.aprovedRequisition(id, observacion);
+    aprovedRequisition(@Param('id') id: number, @Request() req) {
+        return this.requisitionService.aprovedRequisition(id, req.observacion);
     }
 
     @Patch('process/:id')
-    changeProcessRequisition(@Param('id') id: number, @Request() req) {
-        return this.requisitionService.changeProcessRequisition(id, req.user.username)
+    changeProcessRequisition(@Param('id') id: number, @Body() observation: AprovedRequisitionDto) {
+        return this.requisitionService.changeProcessRequisition(id, observation.observation)
     }
 
     @Post()
