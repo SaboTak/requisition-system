@@ -66,7 +66,7 @@ export class RequisitionService {
                         currentState: RequisitionDepartmentStatus[user.department],
                         status: RequisitionStatus.INITIATED,
                         number: 0,
-                        reference: ''
+                        reference: 0
                     }
                     const newRequisition = this.requisitionRepository.create(requisition);
                     const createrequisition = await this.requisitionRepository.save(newRequisition)
