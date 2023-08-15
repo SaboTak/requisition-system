@@ -30,4 +30,7 @@ export class singUpDto {
     @IsString()
     correo : string
 
+    @IsNotEmpty()
+    @IsString()
+    phone : string
 }

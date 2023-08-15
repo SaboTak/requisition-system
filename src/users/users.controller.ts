@@ -13,7 +13,7 @@ export class UsersController {
     @Post('Register')
     @UseInterceptors(FileInterceptor('file', { dest: './uploads' }))
     signIn(@Body() singUpDto: singUpDto,@UploadedFile() file: Express.Multer.File) {
-        return this.usersService.createUser( singUpDto.name, singUpDto.username,singUpDto.password,singUpDto.department,singUpDto.firm, singUpDto.identificacion, singUpDto.correo,file);
+        return this.usersService.createUser( singUpDto.name, singUpDto.username,singUpDto.password,singUpDto.department,singUpDto.firm, singUpDto.identificacion, singUpDto.correo, singUpDto.phone,file);
     }
 
     @Get('profile')

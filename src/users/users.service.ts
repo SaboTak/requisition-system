@@ -20,7 +20,7 @@ export class UsersService {
     });
   }
 
-  async createUser(name: string, username: string, password: string, department: string, firm: string, identificacion: string, correo: string, file: Express.Multer.File): Promise<ValidateDataRequest> {
+  async createUser(name: string, username: string, password: string, department: string, firm: string, identificacion: string, correo: string,phone:string , file: Express.Multer.File): Promise<ValidateDataRequest> {
     try {
 
       const HashPassword = await this.verifyPass(password);
@@ -37,6 +37,7 @@ export class UsersService {
           firm,
           identificacion,
           correo,
+          phone,
           status: UserStatus.ACTIVE,
         };
         const newUser = this.userRepository.create(user);

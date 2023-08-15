@@ -4,7 +4,7 @@ import { LogAccion  } from '../log.entity'
 export class CreateLogsDto {
     
     @IsNotEmpty()
-    @IsString()
+    @IsNumber()
     requisition_id: number
 
     @IsNotEmpty()

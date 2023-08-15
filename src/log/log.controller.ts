@@ -10,7 +10,6 @@ export class LogController {
 
     @Post()
     createLog(@Body() newlog: CreateLogsDto, @Request() req) {
-        console.log('aaaaaaaaaaaaaaaa');
         return this.logService.createLog(newlog.requisition_id, newlog.description, newlog.accion, req.user.username)
     }
 

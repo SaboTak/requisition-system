@@ -12,10 +12,6 @@ export class LogService {
     constructor(private usersService: UsersService, @InjectRepository(Log) private logRepository: Repository<Log>) { }
 
     async createLog(requisition_id: number, description: string, accion: string, username: string): Promise<ValidateDataRequest> {
-        console.log({username,
-            requisition_id,
-            description,
-            accion,})
         try {
             const user = await this.usersService.findOne(username);
             if (user.status === UserStatus.ACTIVE) {
