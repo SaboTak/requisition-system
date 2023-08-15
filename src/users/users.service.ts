@@ -21,8 +21,7 @@ export class UsersService {
   }
 
   async createUser(name: string, username: string, password: string, department: string, firm: string, identificacion: string, correo: string,phone:string , file: Express.Multer.File): Promise<ValidateDataRequest> {
-    try {
-
+    try {      
       const HashPassword = await this.verifyPass(password);
 
       const upImage = await this.uploadImageToCloudinary(file);
@@ -97,7 +96,7 @@ export class UsersService {
     });
     
     // Ruta temporal del archivo cargado
-    const imagePath = file.path;
+    const imagePath = file.path;    
     try {
         // Subir el archivo a Cloudinary
         const datenow = new Date();
