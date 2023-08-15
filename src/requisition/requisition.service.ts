@@ -48,13 +48,14 @@ export class RequisitionService {
         }
     }
 
-    async createRequisition(title: string, number: number, reference: number,  description: string, process: string, username: string, file: Express.Multer.File): Promise<ValidateDataRequest> {
-        
+    async createRequisition(title: string, number: number, reference: number, description: string, process: string, username: string, file: Express.Multer.File): Promise<ValidateDataRequest> {
+
         try {
             const user = await this.usersService.findOne(username);
             if (user.status === UserStatus.ACTIVE) {
                 const upImage = await this.uploadImageToCloudinary(file);
-                
+
+
                 if (upImage.valid == true) {
                     const requisition = {
                         title,
@@ -257,12 +258,15 @@ export class RequisitionService {
         const fs = require('fs');
         // Return "https" URLs by setting secure: true
         cloudinary.config({
-            secure: true
+            secure: true,
+            cloud_name: 'sabos',
+            api_key: '483228871336757',
+            api_secret: 'htQxhSozbP6jXHGIE4bobHYoEmw'
         });
 
         // Ruta temporal del archivo cargado
-        const imagePath = file.path;       
-         
+        const imagePath = file.path;
+
         try {
             // Subir el archivo a Cloudinary
             const datenow = new Date();
@@ -270,7 +274,7 @@ export class RequisitionService {
                 public_id: "Unilibre-" + datenow,
                 folder: "Unilibre"
             });
-            
+
             // La imagen se ha subido exitosamente a Cloudinary
             const imageUrl = result.secure_url;
             // Elimina la carpeta ./uploads/
