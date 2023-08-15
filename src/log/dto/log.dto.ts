@@ -5,10 +5,6 @@ export class CreateLogsDto {
     
     @IsNotEmpty()
     @IsString()
-    user_id: number
-
-    @IsNotEmpty()
-    @IsString()
     requisition_id: number
 
     @IsNotEmpty()
@@ -17,6 +13,6 @@ export class CreateLogsDto {
     
     @IsNotEmpty()
     @IsString()
-    accion: LogAccion
+    accion: string
 
 }

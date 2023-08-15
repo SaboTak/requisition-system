@@ -1,4 +1,4 @@
-import { Entity , Column, PrimaryGeneratedColumn,CreateDateColumn} from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm'
 
 export enum LogAccion {
     CREATE = 'CREATE',
@@ -12,7 +12,7 @@ export enum LogAccion {
 export class Log {
 
     @PrimaryGeneratedColumn()
-    id : number
+    id: number
 
     @Column()
     user_id: number
@@ -21,11 +21,11 @@ export class Log {
     requisition_id: number
 
     @Column()
-    description : string
+    description: string
 
     @CreateDateColumn()
     fechaCreacion: Date;
 
     @Column()
-    accion : LogAccion
+    accion: string
 }
