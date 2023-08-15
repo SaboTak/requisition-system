@@ -48,7 +48,7 @@ export class RequisitionService {
         }
     }
 
-    async createRequisition(title: string, description: string, process: string, username: string, file: Express.Multer.File): Promise<ValidateDataRequest> {
+    async createRequisition(title: string, number: number, reference: number,  description: string, process: string, username: string, file: Express.Multer.File): Promise<ValidateDataRequest> {
         try {
             const user = await this.usersService.findOne(username);
             if (user.status === UserStatus.ACTIVE) {
@@ -57,6 +57,8 @@ export class RequisitionService {
                     const requisition = {
                         title,
                         description,
+                        number,
+                        reference,
                         observation: '',
                         image: upImage.data.toString(),
                         process,
@@ -65,8 +67,6 @@ export class RequisitionService {
                         currentProcess: process,
                         currentState: RequisitionDepartmentStatus[user.department],
                         status: RequisitionStatus.INITIATED,
-                        number: 0,
-                        reference: 0
                     }
                     const newRequisition = this.requisitionRepository.create(requisition);
                     const createrequisition = await this.requisitionRepository.save(newRequisition)

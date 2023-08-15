@@ -49,7 +49,7 @@ export class RequisitionController {
     @Post()
     @UseInterceptors(FileInterceptor('file', { dest: './uploads' }))
     createRequisition(@Body() newrequisition: CreateRequisitionDto, @Request() req,@UploadedFile() file: Express.Multer.File) {
-        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.description, newrequisition.process, req.user.username,file)
+        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.number, newrequisition.reference , newrequisition.description, newrequisition.process, req.user.username, file)
     }
 
     @Delete(':id')

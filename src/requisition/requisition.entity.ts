@@ -53,10 +53,10 @@ export class Requisition {
     @Column()
     reference: number
 
-    @CreateDateColumn()
+    @Column()
     number: number
 
-    @CreateDateColumn()
+    @Column()
     status: RequisitionStatus
 
     @CreateDateColumn()

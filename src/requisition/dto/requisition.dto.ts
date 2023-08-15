@@ -21,7 +21,7 @@ export class CreateRequisitionDto {
     
     @IsNotEmpty()
     @IsString()
-    reference: string
+    reference: number
 
 }
 
