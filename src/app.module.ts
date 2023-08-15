@@ -4,6 +4,7 @@ import { RequisitionModule } from './requisition/requisition.module';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm'
 // import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { LogModule } from './log/log.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -14,12 +15,12 @@ import { TypeOrmModule } from '@nestjs/typeorm'
     password: process.env.DB_PASS,
     port:parseInt(process.env.DB_PORT),
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    dropSchema:false,
+    dropSchema: false,
     synchronize : false,
     ssl: {
       rejectUnauthorized: false,
     }
-  }),AuthModule, RequisitionModule, UsersModule],
+  }),AuthModule, RequisitionModule, UsersModule, LogModule],
   controllers: [],
   providers: [],
 })
