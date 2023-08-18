@@ -37,7 +37,7 @@ export class LogService {
     async getLogs(): Promise<ValidateDataRequest> {
         try {
             const data = await this.logRepository.find();
-            return { message: "Logs ", data: data, valid: true }
+            return { message: "Logs", data: data, valid: true }
         } catch (error) {
             return { message: "Error obteniendo Logs: " + error, data: null, valid: false }
         }

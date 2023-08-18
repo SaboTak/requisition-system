@@ -46,7 +46,7 @@ export class AuthService {
   async verifyAdm(username: string) {
     try {
       const user = await this.usersService.findOne(username);
-      if (user.username == 'sabo') {
+      if (user.username == 'adm') {
         return true
       } else {
         return false

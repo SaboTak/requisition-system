@@ -14,12 +14,12 @@ export class LogController {
     }
 
     @Get()
-    getRequisitions() {
+    getLogs() {
         return this.logService.getLogs()
     }
 
     @Get(':id')
-    getRequisition(@Param('id') id: number, @Request() req) {
+    getLog(@Param('id') id: number, @Request() req) {
         return this.logService.getLog(id, req.user.username)
     }
 }
