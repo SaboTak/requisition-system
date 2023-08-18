@@ -16,11 +16,11 @@ export class CreateRequisitionDto {
     process: string
     
     @IsNotEmpty()
-    @IsString()
+    @IsNumber()
     number: number
     
     @IsNotEmpty()
-    @IsString()
+    @IsNumber()
     reference: number
 
 }
