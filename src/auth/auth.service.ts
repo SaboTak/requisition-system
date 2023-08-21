@@ -27,7 +27,7 @@ export class AuthService {
         const access_token = await this.jwtService.signAsync(payload);
 
         return {
-          message: "Usuario encontrado", data: { access_token: access_token, image: user.image }, valid: true
+          message: "Usuario encontrado", data: { access_token: access_token, image: user.image, id: user.id, email: user.correo }, valid: true
         };
       } else {
         return { message: "Usuario no encontrado", data: null, valid: false };

@@ -6,13 +6,15 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { In, Repository } from "typeorm";
 import { ValidateDataRequest } from 'src/dto/global.dto';
 import { UserStatus } from 'src/users/users.entity';
+import { EmailService } from '../modules/nodemailer/nodemailer.service'
+import { TwilioService } from '../modules/twilio/twilio.service'
 // import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 
 @Injectable()
 export class RequisitionService {
 
-    constructor(private usersService: UsersService, @InjectRepository(Requisition) private requisitionRepository: Repository<Requisition>) { }
+    constructor(private usersService: UsersService, private readonly emailService: EmailService, private twilioService: TwilioService, @InjectRepository(Requisition) private requisitionRepository: Repository<Requisition>) { }
 
     //Principals Methods for requisitions
     async getRequisitions(): Promise<ValidateDataRequest> {
@@ -290,5 +292,22 @@ export class RequisitionService {
         }
     }
 
+    async sendMail() {
+        try {
+            let response = await this.emailService.sendNotification('chrisminecraft00@gmail.com', 'Asunto Prueba', 'Hello text')
+            return { message: "Enviado correcto: ", data: response, valid: true }
+        } catch (err) {
+            return { message: "Error enviado: ", data: err, valid: false }
+        }
+    }
+
+    async sendWp() {
+        try {
+            let response = await this.twilioService.sendWhatsAppMessage('+573052300075', 'Asunto Prueba')
+            return { message: "Enviado correcto: ", data: response, valid: true }
+        } catch (err) {
+            return { message: "Error enviado: ", data: err, valid: false }
+        }
+    }
 
 }

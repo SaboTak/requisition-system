@@ -2,6 +2,8 @@ import { Body, Controller, Delete, Get, InternalServerErrorException, Param, Pat
 import { RequisitionService } from './requisition.service';
 import { CreateRequisitionDto, UpdateRequisitionDto, DeclinedRequisitionDto, AprovedRequisitionDto } from './dto/requisition.dto'
 import { FileInterceptor } from '@nestjs/platform-express';
+import * as XLSX from 'xlsx';
+
 import * as path from 'path';
 
 @Controller('requisition')
@@ -27,8 +29,8 @@ export class RequisitionController {
     }
 
     @Get(':id')
-    getRequisition(@Param('id') id: number,@Request() req) {
-        return this.requisitionService.getRequisition(id,req.user.username)
+    getRequisition(@Param('id') id: number, @Request() req) {
+        return this.requisitionService.getRequisition(id, req.user.username)
     }
 
     @Patch('declined/:id')
@@ -48,8 +50,8 @@ export class RequisitionController {
 
     @Post()
     @UseInterceptors(FileInterceptor('file', { dest: './uploads' }))
-    createRequisition(@Body() newrequisition: CreateRequisitionDto, @Request() req,@UploadedFile() file: Express.Multer.File) {
-        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.number, newrequisition.reference , newrequisition.description, newrequisition.process, req.user.username, file)
+    createRequisition(@Body() newrequisition: CreateRequisitionDto, @Request() req, @UploadedFile() file: Express.Multer.File) {
+        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.number, newrequisition.reference, newrequisition.description, newrequisition.process, req.user.username, file)
     }
 
     @Delete(':id')
@@ -59,8 +61,27 @@ export class RequisitionController {
 
     @Patch(':id')
     @UseInterceptors(FileInterceptor('file', { dest: './uploads' }))
-    updateRequisition(@Param('id') id: number, @Body() updatedFields: UpdateRequisitionDto,@Request() req,@UploadedFile() file: Express.Multer.File) {
-        return this.requisitionService.updateRequisition(id, updatedFields.title,updatedFields.description,file,req.user.username)
+    updateRequisition(@Param('id') id: number, @Body() updatedFields: UpdateRequisitionDto, @Request() req, @UploadedFile() file: Express.Multer.File) {
+        return this.requisitionService.updateRequisition(id, updatedFields.title, updatedFields.description, file, req.user.username)
+    }
+
+    @Post('send-mail')
+    sendMail() {
+        return this.requisitionService.sendMail();
+    }
+
+    @Post('send-wp')
+    sendWp() {
+        return this.requisitionService.sendWp();
+    }
+
+    @Post('upload-excel')
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadFile(@UploadedFile() file) {
+        const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+        return sheetData;
     }
 
 }
