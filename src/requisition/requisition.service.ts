@@ -50,7 +50,7 @@ export class RequisitionService {
         }
     }
 
-    async createRequisition(title: string, number: number, reference: number, description: string, process: string, username: string, file: Express.Multer.File): Promise<ValidateDataRequest> {
+    async createRequisition(title: string, applicant: number, followUpLeader: string, projectCoordinator: string, accesorios: string, eventDate: Date, description: string, process: string, username: string, file: Express.Multer.File): Promise<ValidateDataRequest> {
 
         try {
             const user = await this.usersService.findOne(username);
@@ -62,8 +62,11 @@ export class RequisitionService {
                     const requisition = {
                         title,
                         description,
-                        number,
-                        reference,
+                        applicant,
+                        followUpLeader,
+                        projectCoordinator,
+                        accesorios,
+                        eventDate,
                         observation: '',
                         image: upImage.data.toString(),
                         process,
@@ -303,7 +306,7 @@ export class RequisitionService {
 
     async sendWp() {
         try {
-            let response = await this.twilioService.sendWhatsAppMessage('+573052300075', 'Asunto Prueba')
+            let response = await this.twilioService.sendWhatsAppMessage('+573012816584', 'Arle emo cachon')
             return { message: "Enviado correcto: ", data: response, valid: true }
         } catch (err) {
             return { message: "Error enviado: ", data: err, valid: false }

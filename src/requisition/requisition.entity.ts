@@ -51,10 +51,19 @@ export class Requisition {
     currentState: RequisitionDepartmentStatus
 
     @Column()
-    reference: number
+    applicant: number
 
     @Column()
-    number: number
+    followUpLeader: string
+
+    @Column()
+    projectCoordinator: string
+
+    @Column()
+    accesorios: string
+
+    @Column()
+    eventDate: Date
 
     @Column()
     status: RequisitionStatus

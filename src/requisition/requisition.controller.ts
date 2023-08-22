@@ -51,7 +51,7 @@ export class RequisitionController {
     @Post()
     @UseInterceptors(FileInterceptor('file', { dest: './uploads' }))
     createRequisition(@Body() newrequisition: CreateRequisitionDto, @Request() req, @UploadedFile() file: Express.Multer.File) {
-        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.number, newrequisition.reference, newrequisition.description, newrequisition.process, req.user.username, file)
+        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.applicant, newrequisition.followUpLeader, newrequisition.projectCoordinator, newrequisition.accesorios, newrequisition.eventDate, newrequisition.description, newrequisition.process, req.user.username, file)
     }
 
     @Delete(':id')
@@ -78,10 +78,15 @@ export class RequisitionController {
     @Post('upload-excel')
     @UseInterceptors(FileInterceptor('file'))
     async uploadFile(@UploadedFile() file) {
-        const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-        const sheetName = workbook.SheetNames[0];
-        const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-        return sheetData;
+        try{
+            const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+            const sheetName = workbook.SheetNames[0];
+            const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+            return { message: "Enviado correcto: ", data: sheetData, valid: true }
+        }catch(err){
+            return { message: "Error enviando: ", data: err, valid: true }
+        }
+       
     }
 
 }
