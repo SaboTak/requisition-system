@@ -25,7 +25,12 @@ export class EmailService {
       to: email,
       subject: subject,
       text: message,
-      html: "<b>Hello world?</b>"
+      html: `
+      <h1>Buenas, informacion de su requisicion</h1>
+      <p>${message}</p>
+      </hr>
+      <b>Por favor, no enviar mensajes a este correo</b> 
+      `
     });
     // console.log("Message sent: %s", info.messageId);
     return info

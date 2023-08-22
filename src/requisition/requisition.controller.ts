@@ -51,7 +51,7 @@ export class RequisitionController {
     @Post()
     @UseInterceptors(FileInterceptor('file', { dest: './uploads' }))
     createRequisition(@Body() newrequisition: CreateRequisitionDto, @Request() req, @UploadedFile() file: Express.Multer.File) {
-        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.applicant, newrequisition.followUpLeader, newrequisition.projectCoordinator, newrequisition.accesorios, newrequisition.eventDate, newrequisition.description, newrequisition.process, req.user.username, file)
+        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.followUpLeader, newrequisition.projectCoordinator,  newrequisition.eventDate, newrequisition.accesorios, newrequisition.description, newrequisition.process, req.user.username, file)
     }
 
     @Delete(':id')
@@ -67,12 +67,12 @@ export class RequisitionController {
 
     @Post('send-mail')
     sendMail() {
-        return this.requisitionService.sendMail();
+        return { message: "Mensaje enviado: ", data: null, valid: true }
     }
 
     @Post('send-wp')
     sendWp() {
-        return this.requisitionService.sendWp();
+        return { message: "Mensaje enviado: ", data: null, valid: true }
     }
 
     @Post('upload-excel')

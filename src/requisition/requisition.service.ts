@@ -50,23 +50,20 @@ export class RequisitionService {
         }
     }
 
-    async createRequisition(title: string, applicant: number, followUpLeader: string, projectCoordinator: string, accesorios: string, eventDate: Date, description: string, process: string, username: string, file: Express.Multer.File): Promise<ValidateDataRequest> {
-
+    async createRequisition(title: string, followUpLeader: string, projectCoordinator: string, eventDate: Date, accesorios: string, description: string, process: string, username: string, file: Express.Multer.File): Promise<ValidateDataRequest> {
         try {
             const user = await this.usersService.findOne(username);
             if (user.status === UserStatus.ACTIVE) {
                 const upImage = await this.uploadImageToCloudinary(file);
-
-
                 if (upImage.valid == true) {
                     const requisition = {
                         title,
                         description,
-                        applicant,
+                        applicant: user.id,
                         followUpLeader,
                         projectCoordinator,
-                        accesorios,
                         eventDate,
+                        accesorios,
                         observation: '',
                         image: upImage.data.toString(),
                         process,
@@ -78,6 +75,8 @@ export class RequisitionService {
                     }
                     const newRequisition = this.requisitionRepository.create(requisition);
                     const createrequisition = await this.requisitionRepository.save(newRequisition)
+                    await this.sendMail('chrisminecraft00@gmail.com', 'INFORMACIÓN DE REQUISICIÓN UNIVERSIDAD LIBRE', `Se ha creado su requisición: ${JSON.stringify(requisition)}`)
+                    await this.sendWp('+573052300075', `Se ha creado su requisición: ${JSON.stringify(requisition)}`)
                     return { message: "Requisicion creada con exito ", data: createrequisition, valid: true }
                 } else {
                     return { message: "Error subiendo Imagen ", data: null, valid: false }
@@ -171,6 +170,8 @@ export class RequisitionService {
                     currentDates: resultDates,
                     status: newProcessStatus.length == 0 ? RequisitionStatus.PENDING : RequisitionStatus.IN_PROGRESS,
                 })
+                await this.sendMail('chrisminecraft00@gmail.com', 'INFORMACIÓN DE REQUISICIÓN UNIVERSIDAD LIBRE', `Se ha cambiado de firma su requisición hacia ${resultNewProcess}. Requisición: ${requisition}`)
+                await this.sendWp('+573052300075', `Se ha cambiado de firma su requisición hacia ${resultNewProcess}. Requisición: ${requisition}`)
                 return { message: "Requisicion actualizada con exito", data: UpdateRequisition, valid: true }
             } else {
                 return { message: "Usuario invalido para cambiar estado de requisicion ", data: null, valid: false }
@@ -185,6 +186,8 @@ export class RequisitionService {
             const requisition = await this.getRequisitionById(id);
             if (requisition.status == RequisitionStatus.PENDING || requisition.status == RequisitionStatus.IN_PROGRESS || requisition.status == RequisitionStatus.INITIATED) {
                 await this.requisitionRepository.update(id, { status: RequisitionStatus.APPROVED, observation: observation })
+                await this.sendMail('chrisminecraft00@gmail.com', 'INFORMACIÓN DE REQUISICIÓN UNIVERSIDAD LIBRE', `Se ha aprovado su requisición: ${JSON.stringify(JSON.stringify(requisition))}`)
+                await this.sendWp('+573052300075', `Se ha aprovado su requisición: ${JSON.stringify(JSON.stringify(requisition))}`)
                 return { message: "Requisicion aprobada con exito ", data: null, valid: true }
             }
             return { message: "Error aprobando Requisicion ", data: requisition, valid: false }
@@ -198,6 +201,8 @@ export class RequisitionService {
             const requisition = await this.getRequisitionById(id);
             if (requisition.status == RequisitionStatus.PENDING || requisition.status == RequisitionStatus.IN_PROGRESS || requisition.status == RequisitionStatus.INITIATED) {
                 await this.requisitionRepository.update(id, { status: RequisitionStatus.DECLINED, observation: observation })
+                await this.sendMail('chrisminecraft00@gmail.com', 'INFORMACIÓN DE REQUISICIÓN UNIVERSIDAD LIBRE', `Se ha declinado su requisición por la razon: ${requisition.observation}. Requisición: ${JSON.stringify(requisition)}`)
+                await this.sendWp('+573052300075', `Se ha declinado su requisición por la razon: ${requisition.observation}. Requisición: ${JSON.stringify(requisition)}`)
                 return { message: "Requisicion rechazada con exito ", data: null, valid: true }
             }
             return { message: "Error Rechazando Requisicion ", data: requisition, valid: false }
@@ -295,19 +300,17 @@ export class RequisitionService {
         }
     }
 
-    async sendMail() {
+    async sendMail(email: string, asunto: string, text: string) {
         try {
-            let response = await this.emailService.sendNotification('chrisminecraft00@gmail.com', 'Asunto Prueba', 'Hello text')
-            return { message: "Enviado correcto: ", data: response, valid: true }
+            await this.emailService.sendNotification(email, asunto, text)
         } catch (err) {
             return { message: "Error enviado: ", data: err, valid: false }
         }
     }
 
-    async sendWp() {
+    async sendWp(phone: string, text: string) {
         try {
-            let response = await this.twilioService.sendWhatsAppMessage('+573012816584', 'Arle emo cachon')
-            return { message: "Enviado correcto: ", data: response, valid: true }
+            await this.twilioService.sendWhatsAppMessage(phone, text)
         } catch (err) {
             return { message: "Error enviado: ", data: err, valid: false }
         }

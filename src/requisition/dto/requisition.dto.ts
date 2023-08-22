@@ -16,10 +16,6 @@ export class CreateRequisitionDto {
     process: string
     
     @IsNotEmpty()
-    @IsNumber()
-    applicant: number
-    
-    @IsNotEmpty()
     @IsString()
     followUpLeader: string
     
@@ -28,7 +24,7 @@ export class CreateRequisitionDto {
     projectCoordinator: string
     
     @IsNotEmpty()
-    @IsDate()
+    @IsString()
     eventDate: Date
     
     @IsNotEmpty()
