@@ -3,7 +3,7 @@ import { RequisitionService } from './requisition.service';
 import { CreateRequisitionDto, UpdateRequisitionDto, DeclinedRequisitionDto, AprovedRequisitionDto } from './dto/requisition.dto'
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
-
+const fs = require('fs');
 import * as path from 'path';
 
 @Controller('requisition')
@@ -29,7 +29,7 @@ export class RequisitionController {
     }
 
     @Get('departments/:id')
-    getDepartmentsId(@Param('id') id: number,@Request() req) {
+    getDepartmentsId(@Param('id') id: number, @Request() req) {
         return this.requisitionService.getDepartmentsId(id, req.user.username)
     }
 
@@ -56,7 +56,7 @@ export class RequisitionController {
     @Post()
     @UseInterceptors(FileInterceptor('file', { dest: './uploads' }))
     createRequisition(@Body() newrequisition: CreateRequisitionDto, @Request() req, @UploadedFile() file: Express.Multer.File) {
-        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.followUpLeader, newrequisition.projectCoordinator,  newrequisition.eventDate, newrequisition.accesorios, newrequisition.description, newrequisition.process, req.user.username, file)
+        return this.requisitionService.createRequisition(newrequisition.title, newrequisition.followUpLeader, newrequisition.projectCoordinator, newrequisition.eventDate, newrequisition.accesorios, newrequisition.description, newrequisition.process, req.user.username, file)
     }
 
     @Delete(':id')
@@ -83,15 +83,21 @@ export class RequisitionController {
     @Post('upload-excel')
     @UseInterceptors(FileInterceptor('file'))
     async uploadFile(@UploadedFile() file) {
-        try{
+        try {
             const workbook = XLSX.read(file.buffer, { type: 'buffer' });
             const sheetName = workbook.SheetNames[0];
             const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-            return { message: "Enviado correcto: ", data: sheetData, valid: true }
-        }catch(err){
+            // Eliminar el archivo una vez usado
+            fs.unlink(`./uploads/${sheetName}`, (err) => {
+                if (err) {
+                    console.error('Error al eliminar el archivo:', err);
+                }
+            });
+            return { message: "Enviado y eliminado correcto: ", data: sheetData, valid: true }
+        } catch (err) {
             return { message: "Error enviando: ", data: err, valid: true }
         }
-       
+
     }
 
 }
