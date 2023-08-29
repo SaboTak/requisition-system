@@ -81,7 +81,7 @@ export class RequisitionService {
                     }
                     const newRequisition = this.requisitionRepository.create(requisition);
                     const createrequisition = await this.requisitionRepository.save(newRequisition)
-                    await this.sendMail('chrisminecraft00@gmail.com', 'INFORMACIÓN DE REQUISICIÓN UNIVERSIDAD LIBRE', `Se ha creado su requisición: ${JSON.stringify(requisition)}`)
+                    await this.sendMail('ciglesias1997@gmail.com', 'INFORMACIÓN DE REQUISICIÓN UNIVERSIDAD LIBRE', `Se ha creado su requisición`, requisition)
                     await this.sendWp('+573052300075', `Se ha creado su requisición: ${JSON.stringify(requisition)}`)
                     return { message: "Requisicion creada con exito ", data: createrequisition, valid: true }
                 } else {
@@ -176,7 +176,7 @@ export class RequisitionService {
                     currentDates: resultDates,
                     status: newProcessStatus.length == 0 ? RequisitionStatus.PENDING : RequisitionStatus.IN_PROGRESS,
                 })
-                await this.sendMail('chrisminecraft00@gmail.com', 'INFORMACIÓN DE REQUISICIÓN UNIVERSIDAD LIBRE', `Se ha cambiado de firma su requisición hacia ${resultNewProcess}. Requisición: ${requisition}`)
+                await this.sendMail('ciglesias1997@gmail.com', 'INFORMACIÓN DE REQUISICIÓN UNIVERSIDAD LIBRE', `Se ha cambiado de firma su requisición hacia ${resultNewProcess}`, requisition)
                 await this.sendWp('+573052300075', `Se ha cambiado de firma su requisición hacia ${resultNewProcess}. Requisición: ${requisition}`)
                 return { message: "Requisicion actualizada con exito", data: UpdateRequisition, valid: true }
             } else {
@@ -192,7 +192,7 @@ export class RequisitionService {
             const requisition = await this.getRequisitionById(id);
             if (requisition.status == RequisitionStatus.PENDING || requisition.status == RequisitionStatus.IN_PROGRESS || requisition.status == RequisitionStatus.INITIATED) {
                 await this.requisitionRepository.update(id, { status: RequisitionStatus.APPROVED, observation: observation })
-                await this.sendMail('chrisminecraft00@gmail.com', 'INFORMACIÓN DE REQUISICIÓN UNIVERSIDAD LIBRE', `Se ha aprovado su requisición: ${JSON.stringify(JSON.stringify(requisition))}`)
+                await this.sendMail('ciglesias1997@gmail.com', 'INFORMACIÓN DE REQUISICIÓN UNIVERSIDAD LIBRE', `Se ha aprovado su requisición`, requisition)
                 await this.sendWp('+573052300075', `Se ha aprovado su requisición: ${JSON.stringify(JSON.stringify(requisition))}`)
                 return { message: "Requisicion aprobada con exito ", data: null, valid: true }
             }
@@ -207,7 +207,7 @@ export class RequisitionService {
             const requisition = await this.getRequisitionById(id);
             if (requisition.status == RequisitionStatus.PENDING || requisition.status == RequisitionStatus.IN_PROGRESS || requisition.status == RequisitionStatus.INITIATED) {
                 await this.requisitionRepository.update(id, { status: RequisitionStatus.DECLINED, observation: observation })
-                await this.sendMail('chrisminecraft00@gmail.com', 'INFORMACIÓN DE REQUISICIÓN UNIVERSIDAD LIBRE', `Se ha declinado su requisición por la razon: ${requisition.observation}. Requisición: ${JSON.stringify(requisition)}`)
+                await this.sendMail('ciglesias1997@gmail.com', 'INFORMACIÓN DE REQUISICIÓN UNIVERSIDAD LIBRE', `Se ha declinado su requisición por la razon: ${requisition.observation}`, requisition)
                 await this.sendWp('+573052300075', `Se ha declinado su requisición por la razon: ${requisition.observation}. Requisición: ${JSON.stringify(requisition)}`)
                 return { message: "Requisicion rechazada con exito ", data: null, valid: true }
             }
@@ -325,9 +325,9 @@ export class RequisitionService {
         }
     }
 
-    async sendMail(email: string, asunto: string, text: string) {
+    async sendMail(email: string, asunto: string, text: string, data: any) {
         try {
-            await this.emailService.sendNotification(email, asunto, text)
+            await this.emailService.sendNotification(email, asunto, text, data)
         } catch (err) {
             return { message: "Error enviado: ", data: err, valid: false }
         }
