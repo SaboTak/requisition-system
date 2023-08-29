@@ -28,6 +28,11 @@ export class RequisitionController {
         return this.requisitionService.getDepartments(req.user.username)
     }
 
+    @Get('departments/:id')
+    getDepartmentsId(@Param('id') id: number,@Request() req) {
+        return this.requisitionService.getDepartmentsId(id, req.user.username)
+    }
+
     @Get(':id')
     getRequisition(@Param('id') id: number, @Request() req) {
         return this.requisitionService.getRequisition(id, req.user.username)

@@ -36,7 +36,13 @@ export class RequisitionService {
                     }
                 });
                 if (user.department === data.currentState) {
-                    return { message: "Requisicion ", data: data, valid: true }
+                    const userRes = await this.usersService.findOneById(data.applicant);
+                    let dataParse = {
+                        aplicantName: userRes.name,
+                        aplicantEmail: userRes.correo,
+                        ...data
+                    } 
+                    return { message: "Requisicion ", data: dataParse, valid: true }
                 } else {
                     return { message: "No esta disponible para tu departamento", data: null, valid: false }
                 }
@@ -230,7 +236,7 @@ export class RequisitionService {
         }
     }
 
-    async getDepartments(username: string) {
+    async getDepartments( username: string) {
         try {
             const user = await this.usersService.findOne(username);
             if (user.status === UserStatus.ACTIVE) {
@@ -247,6 +253,25 @@ export class RequisitionService {
         } catch (error) {
             return { message: "Error obteniendo Departamentos: " + error, data: null, valid: false }
         }
+    }
+
+    async getDepartmentsId(id: number, username: string) {
+        try {
+            const user = await this.usersService.findOne(username);
+            if (user.status === UserStatus.ACTIVE) {
+                const departamentos = await this.requisitionRepository.find({
+                    where: {
+                        applicant: id
+                    }
+                })
+                return { message: "Departamentos obtenidos correctamente", data: departamentos, valid: true }
+            } else {
+                return { message: "Error usuario invalido: ", data: null, valid: false }
+            }
+        } catch (error) {
+            return { message: "Error obteniendo Departamentos: " + error, data: null, valid: false }
+        }
+
     }
 
     // Methods Aux
