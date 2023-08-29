@@ -49,8 +49,8 @@ export class RequisitionController {
     }
 
     @Patch('process/:id')
-    changeProcessRequisition(@Param('id') id: number, @Body() observation: AprovedRequisitionDto) {
-        return this.requisitionService.changeProcessRequisition(id, observation.observation)
+    changeProcessRequisition(@Param('id') id: number, @Request() req) {
+        return this.requisitionService.changeProcessRequisition(id, req.user.username)
     }
 
     @Post()
